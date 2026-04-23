@@ -1,1 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>夜市大對決 (Bootstrap 適應版)</title>
+    <!-- 引入 Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: radial-gradient(ellipse at center, #1e293b, #0f172a);
+            color: white;
+            user-select: none;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
+        /* 系統訊息 */
+        .sys-message {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(4px);
+            border: 2px solid #64748b;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 900;
+            color: #fbbf24;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+
+        /* 獨立防禦數值顯示 */
+        .shield-display {
+            font-size: 1.5rem;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+        @media (max-width: 768px) {
+            .shield-display { font-size: 1.2rem; margin-bottom: 5px !important; }
+        }
+
+        /* 英雄/攤位頭像 */
+        .hero-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        @media (max-width: 768px) {
+            /* 手機版頭像適當縮小，確保能放在同一行且不擁擠 */
+            .hero-avatar { width: 95px; height: 95px; border-width: 5px !important; }
+            .hero-avatar > span.text-bright-yellow { font-size: 0.8rem !important; margin-bottom: 0 !important; }
+            .hero-avatar .fs-3 { font-size: 0.95rem !important; }
+            .stats-badge { padding: 3px 12px; font-size: 0.8rem; bottom: -15px; border-width: 2px; }
+        }
+
+        .hero-player { background-color: #1e3a8a; border: 8px solid #3b82f6; box-shadow: 0 0 30px rgba(59,130,246,0.6); }
+        .hero-enemy { background-color: #7f1d1d; border: 8px solid #dc2626; box-shadow: 0 0 30px rgba(220,38,38,0.6); }
+
+        /* 狀態標籤 */
+        .stats-badge {
+            position: absolute;
+            bottom: -20px;
+            background: #1e293b;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            border: 2px solid;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        .stats-player { border-color: #60a5fa; color: #93c5fd; }
+        .stats-enemy { border-color: #f87171; color: #fca5a5; }
+
+        /* 資訊面板 (牌堆與背包) */
+        .info-panel {
+            position: absolute;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 5;
+        }
+        .info-panel.left { left: -30px; }
+        .info-panel.right { right: -30px; }
+        @media (max-width: 768px) {
+            /* 修正手機版定位，防止被螢幕邊緣切斷 */
+            .info-panel { transform: scale(0.85); top: -10px; }
+            .info-panel.left { left: 5px; }
+            .info-panel.right { right: 5px; }
+        }
+        .info-box {
+            background: #1e293b;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            text-align: center;
+            border: 2px solid #64748b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 出牌區 */
+        .drop-zone {
+            width: 320px;
+            height: 160px;
+            border-radius: 20px; /* 變更為有弧度的長方形 */
+            border: 4px dashed #64748b;
+            background: rgba(30, 41, 59, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 20;
+        }
+        @media (max-width: 768px) {
+            .drop-zone { width: 220px; height: 120px; margin: 10px 0; border-radius: 15px; }
+            .drop-zone .fs-4 { font-size: 1.2rem !important; }
+        }
+        .drop-zone-active {
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.6) inset !important;
+            transform: scale(1.05);
+        }
+
+        /* 卡牌樣式 */
+        .game-card {
+            width: 135px;
+            height: 195px;
+            background: #f8fafc;
+            border: 4px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+            color: #0f172a;
+        }
+        @media (max-width: 768px) {
+            .game-card { width: 100px; height: 145px; border-width: 3px; }
+            .game-card .card-emoji { font-size: 2.5rem !important; }
+            .game-card .card-title { font-size: 0.75rem !important; padding: 2px 0; }
+            .game-card .card-desc { font-size: 0.6rem !important; height: 40px; padding: 2px; }
+        }
+
+        .card-playable {
+            box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.6);
+            border-color: #22c55e;
+            cursor: grab;
+        }
+        .card-playable:hover { transform: translateY(-20px) scale(1.1); z-index: 50; }
+        .card-playable:active { cursor: grabbing; }
+        .card-disabled { opacity: 0.7; filter: grayscale(0.5); cursor: not-allowed; }
+
+        .card-cost {
+            position: absolute;
+            top: -12px; left: -12px;
+            width: 35px; height: 35px;
+            background: #1e293b; color: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.1rem;
+            border: 2px solid #fbbf24; z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card-val {
+            position: absolute;
+            bottom: -15px; left: 50%; transform: translateX(-50%);
+            padding: 0 12px; height: 30px;
+            color: white; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; border: 2px solid white; z-index: 10;
+            white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .val-food { background: #16a34a; }
+        .val-attack { background: #dc2626; }
+        .val-defense { background: #3b82f6; }
+
+        .bg-food { background: linear-gradient(to bottom, #dcfce7, #f8fafc); }
+        .bg-attack { background: linear-gradient(to bottom, #fee2e2, #f8fafc); }
+        .bg-defense { background: linear-gradient(to bottom, #dbeafe, #f8fafc); }
+
+        /* 亮黃色高亮文字 */
+        .text-bright-yellow {
+            color: #ffeb3b !important;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 手牌區 (疊牌效果與靠左) */
+        .hand-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
+            padding: 50px 10px 10px; 
+            overflow: visible; 
+            flex-wrap: nowrap;
+            pointer-events: auto;
+        }
+
+        /* 針對電腦版將手牌位置往右挪 */
+        @media (min-width: 769px) {
+            .hand-container {
+                padding-left: 8vw; /* 將手牌向右推進 */
+            }
+        }
+
+        /* 卡牌重疊與放大動畫 (鬥地主 style) */
+        .game-card {
+            width: 135px;
+            height: 195px;
+            background: #f8fafc;
+            border: 4px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s, margin 0.2s;
+            flex-shrink: 0;
+            color: #0f172a;
+            margin-left: -65px; /* 卡牌重疊的負邊距 */
+        }
+        
+        .game-card:first-child {
+            margin-left: 0; /* 第一張牌不需要重疊 */
+        }
+
+        @media (max-width: 768px) {
+            .game-card { width: 100px; height: 145px; border-width: 3px; margin-left: -50px; }
+            .game-card .card-emoji { font-size: 2.5rem !important; }
+            .game-card .card-title { font-size: 0.75rem !important; padding: 2px 0; }
+            .game-card .card-desc { font-size: 0.6rem !important; height: 40px; padding: 2px; }
+        }
+
+        .card-playable {
+            box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.6);
+            border-color: #22c55e;
+            cursor: grab;
+        }
+        
+        /* 懸停或點擊放大時的效果 */
+        .card-playable:hover, .card-playable.card-focused { 
+            transform: translateY(-40px) scale(1.15); 
+            z-index: 100 !important; 
+            margin-right: 20px; /* 把右邊的卡牌稍微推開 */
+        }
+        .card-playable:active { cursor: grabbing; }
+        
+        /* 連動推開右側的卡牌，製造扇形展開感 */
+        .card-playable:hover ~ .game-card, .card-playable.card-focused ~ .game-card {
+            transform: translateX(20px);
+        }
+
+        @media (max-width: 768px) {
+            .card-playable:hover, .card-playable.card-focused { 
+                transform: translateY(-25px) scale(1.1); 
+                margin-right: 15px; 
+            }
+            .card-playable:hover ~ .game-card, .card-playable.card-focused ~ .game-card {
+                transform: translateX(15px);
+            }
+        }
+
+        .card-disabled { opacity: 0.7; filter: grayscale(0.5); cursor: not-allowed; }
+
+        /* 特效動畫 */
+        @keyframes vanish-burn {
+            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            40% { transform: scale(1.2); opacity: 0.9; filter: brightness(1.5) drop-shadow(0 0 20px #fbbf24); }
+            100% { transform: scale(0.5); opacity: 0; filter: brightness(2) blur(5px); }
+        }
+        .anim-vanish { animation: vanish-burn 0.6s forwards cubic-bezier(0.4, 0, 0.2, 1); }
+
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(-40px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1); opacity: 0; }
+        }
+        .anim-damage {
+            position: absolute;
+            font-size: 3.5rem;
+            font-weight: 900;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            animation: float-up 1s forwards ease-out;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-5px, -5px) rotate(-2deg); }
+            40% { transform: translate(5px, 0px) rotate(2deg); }
+            60% { transform: translate(-5px, 5px) rotate(-2deg); }
+            80% { transform: translate(5px, -5px) rotate(2deg); }
+        }
+        .damage-shake {
+            animation: shake 0.4s 1;
+            filter: brightness(0.7) sepia(1) hue-rotate(-50deg) saturate(5);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column h-100">
+
+    <!-- 遊戲結束遮罩 -->
+    <div id="game-over-screen" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column align-items-center justify-content-center" style="z-index: 1050; backdrop-filter: blur(5px);">
+        <h1 id="game-over-text" class="display-3 fw-bold mb-4 text-white text-center text-shadow"></h1>
+        <button onclick="initGame()" class="btn btn-danger btn-lg px-5 py-3 fw-bold border border-3 border-white shadow-lg fs-3">
+            重新開始營業
+        </button>
+    </div>
+
+    <!-- 為了避免跟底部手牌重疊，留出足夠的 padding-bottom -->
+    <div class="container-fluid flex-grow-1 d-flex flex-column position-relative" style="padding-bottom: 220px;">
+        
+        <!-- 回合標示 -->
+        <div class="position-absolute top-0 end-0 mt-3 me-3 me-md-5 text-warning fw-bold fs-5 z-3 pointer-events-none" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+            回合: <span id="round-display">1</span> / 10
+        </div>
+
+        <!-- 頂部資訊列 -->
+        <div class="row pt-4 pb-2 z-3 pointer-events-none">
+            <div class="col-12 d-flex justify-content-center">
+                <div id="system-message" class="sys-message">
+                    遊戲開始！拖曳小吃或雙擊出牌
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要戰場區 -->
+        <div class="row flex-grow-1 align-items-center justify-content-center px-lg-5 w-100 m-0">
+            
+            <!-- 我方區域 (手機版: col-6 order-1，左側 / 電腦版: order-1，左側) -->
+            <div class="col-6 col-md-4 order-1 d-flex flex-column align-items-center justify-content-center position-relative mt-2 mt-md-0">
+                <div class="info-panel left">
+                    <div class="info-box border-warning">🎴 牌堆<br><span id="player-deck-count" class="fw-bold text-warning">0</span></div>
+                    <div class="info-box border-info">🎒 背包<br><span id="player-discard-count" class="fw-bold text-info">0</span></div>
+                </div>
+
+                <!-- 我方防禦數值上移 -->
+                <div class="shield-display fw-bold text-bright-yellow mb-2">🛡️ <span id="player-shield">0</span></div>
+
+                <div id="player-hero" class="hero-avatar hero-player mb-4 mb-md-0">
+                    <span class="fw-bold text-bright-yellow mb-1">我方攤位</span>
+                    <div class="fs-3 fw-bold">👥 <span id="player-hp">50</span>%</div>
+                    
+                    <div class="stats-badge stats-player">
+                        💰 <span id="player-mana" class="text-info">1</span>/<span id="player-max-mana">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 敵方區域 (手機版: col-6 order-2，右側 / 電腦版: order-3，右側) -->
+            <div class="col-6 col-md-4 order-2 order-md-3 d-flex flex-column align-items-center justify-content-center position-relative mt-2 mt-md-0">
+                <div class="info-panel right">
+                    <div class="info-box border-warning">🎴 牌堆<br><span id="enemy-deck-count" class="fw-bold text-warning">0</span></div>
+                    <div class="info-box border-info">🎒 背包<br><span id="enemy-discard-count" class="fw-bold text-info">0</span></div>
+                </div>
+
+                <!-- 敵方防禦數值上移 -->
+                <div class="shield-display fw-bold text-bright-yellow mb-2">🛡️ <span id="enemy-shield">0</span></div>
+
+                <div id="enemy-hero" class="hero-avatar hero-enemy mb-4 mb-md-0">
+                    <span class="fw-bold text-bright-yellow mb-1">競爭對手</span>
+                    <div class="fs-3 fw-bold">👥 <span id="enemy-hp">50</span>%</div>
+                    
+                    <div class="stats-badge stats-enemy">
+                        💰 <span id="enemy-mana" class="text-danger">1</span>/<span id="enemy-max-mana">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中間出牌區 (手機版: col-12 order-3，在雙方頭像下方 / 電腦版: order-2，中間) -->
+            <div class="col-12 col-md-4 order-3 order-md-2 d-flex flex-column align-items-center justify-content-center position-relative z-2 mt-4 mt-md-0">
+                <div id="drop-zone" 
+                     ondragover="dragOver(event)" 
+                     ondragleave="dragLeave(event)" 
+                     ondrop="dropCard(event)"
+                     class="drop-zone shadow-lg">
+                    <div class="text-secondary fs-4 fw-bold mb-2 pointer-events-none">🍽️ 營業區域</div>
+                    <div class="text-secondary small pointer-events-none text-center px-3">拖放卡牌至此<br>或雙擊出牌</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 底部我方手牌與操作區 -->
+    <div class="fixed-bottom w-100 z-3 d-flex flex-row align-items-end px-3 pb-3 gap-3" style="pointer-events: none;">
+        
+        <!-- 手牌區 -->
+        <div id="player-hand" class="hand-container flex-grow-1" style="min-width: 0;">
+            <!-- JavaScript 動態生成 -->
+        </div>
+
+        <!-- 結束回合按鈕 (卡牌右側) -->
+        <div class="flex-shrink-0 mb-4 me-md-4" style="pointer-events: auto;">
+            <button id="end-turn-btn" onclick="endTurn()" class="btn btn-warning btn-lg fw-bold border border-2 border-white shadow-lg rounded-pill px-4 py-3 text-nowrap">
+                結束營業<br>(回合)
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 引入 Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- 雙方獨立的卡牌資料庫 (點數上限3點，大幅增加攻擊牌比例) ---
+        // 我方卡牌 (11張：3食物, 6攻擊, 2防禦)
+        const PLAYER_CARD_DB = [
+            { id: 1, type: 'food', name: "地瓜球", cost: 1, val: 4, img: "🍠", desc: "增加 4% 客流。" },
+            { id: 2, type: 'food', name: "珍珠奶茶", cost: 2, val: 7, img: "🧋", desc: "增加 7% 客流。" },
+            { id: 3, type: 'food', name: "豪大雞排", cost: 3, val: 11, img: "🍗", desc: "增加 11% 客流。" },
+            
+            { id: 4, type: 'attack', name: "惡意負評", cost: 1, val: 4, img: "👎", desc: "減少對手 4% 客流。" },
+            { id: 5, type: 'attack', name: "雇人佔位", cost: 1, val: 3, img: "🪑", desc: "減少對手 3% 客流。" },
+            { id: 6, type: 'attack', name: "網路抹黑", cost: 2, val: 7, img: "🕷️", desc: "減少對手 7% 客流。" },
+            { id: 7, type: 'attack', name: "造謠食材", cost: 2, val: 8, img: "🤢", desc: "減少對手 8% 客流。" },
+            { id: 8, type: 'attack', name: "檢舉違建", cost: 3, val: 10, img: "🚧", desc: "減少對手 10% 客流。" },
+            { id: 9, type: 'attack', name: "衛生局查驗", cost: 3, val: 12, img: "🚨", desc: "減少對手 12% 客流。" },
+            
+            { id: 10, type: 'defense', name: "加強清潔", cost: 1, val: 5, img: "🧹", desc: "獲得 5 點防禦。" },
+            { id: 11, type: 'defense', name: "SGS認證", cost: 3, val: 12, img: "📜", desc: "獲得 12 點防禦。" }
+        ];
+
+        // 敵方卡牌 (10張：2食物, 6攻擊, 2防禦)
+        const ENEMY_CARD_DB = [
+            { id: 101, type: 'food', name: "連鎖速食", cost: 2, val: 7, img: "🍔", desc: "增加 7% 客流。" },
+            { id: 102, type: 'food', name: "網紅代言", cost: 3, val: 11, img: "🤳", desc: "增加 11% 客流。" },
+            
+            { id: 103, type: 'attack', name: "惡意負評", cost: 1, val: 4, img: "👎", desc: "減少你 4% 客流。" },
+            { id: 104, type: 'attack', name: "散播謠言", cost: 1, val: 3, img: "🗣️", desc: "減少你 3% 客流。" },
+            { id: 105, type: 'attack', name: "斷水斷電", cost: 2, val: 7, img: "🔌", desc: "減少你 7% 客流。" },
+            { id: 106, type: 'attack', name: "檢舉騎樓", cost: 2, val: 8, img: "📸", desc: "減少你 8% 客流。" },
+            { id: 107, type: 'attack', name: "派人砸場", cost: 3, val: 10, img: "🏏", desc: "減少你 10% 客流。" },
+            { id: 108, type: 'attack', name: "挖角師傅", cost: 3, val: 12, img: "🧑‍🍳", desc: "減少你 12% 客流。" },
+            
+            { id: 109, type: 'defense', name: "買榜公關", cost: 2, val: 8, img: "📢", desc: "獲得 8 點防禦。" },
+            { id: 110, type: 'defense', name: "資本護航", cost: 3, val: 12, img: "💼", desc: "獲得 12 點防禦。" }
+        ];
+
+        // --- 遊戲狀態 ---
+        let state = {
+            round: 1, // 增加回合紀錄
+            turn: 'player', 
+            player: { hp: 50, shield: 0, mana: 1, maxMana: 1, hand: [], deck: [], discard: [] },
+            enemy: { hp: 50, shield: 0, mana: 1, maxMana: 1, hand: [], deck: [], discard: [] },
+            isProcessing: false 
+        };
+
+        // --- 工具函數 ---
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const clone = obj => JSON.parse(JSON.stringify(obj));
+
+        // 產生牌組 (權重加成：降低防禦卡機率)
+        function generateDeck(db) {
+            let deck = [];
+            let pool = [];
+            // 加權機制：防禦卡放 1 張進池子，其他類型放 3 張
+            db.forEach(card => {
+                let weight = card.type === 'defense' ? 1 : 3;
+                for(let w = 0; w < weight; w++) {
+                    pool.push(card);
+                }
+            });
+
+            for(let i=0; i<20; i++) {
+                let randomCard = clone(pool[Math.floor(Math.random() * pool.length)]);
+                randomCard.uid = Math.random().toString(36).substr(2, 9);
+                deck.push(randomCard);
+            }
+            return deck;
+        }
+
+        // 洗牌
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 抽牌邏輯
+        function drawCard(target) {
+            let s = state[target];
+            if (s.deck.length === 0) {
+                if (s.discard.length === 0) return; 
+                s.deck = shuffle(s.discard);
+                s.discard = [];
+                showMessage(`${target === 'player' ? '你' : '對手'}的背包已重新洗牌！`);
+            }
+            if (s.deck.length > 0) {
+                s.hand.push(s.deck.pop());
+            }
+        }
+
+        // --- 遊戲邏輯 ---
+        function initGame() {
+            document.getElementById('game-over-screen').classList.add('d-none');
+            
+            state = {
+                round: 1,
+                turn: 'player',
+                player: { hp: 50, shield: 0, mana: 1, maxMana: 1, hand: [], deck: generateDeck(PLAYER_CARD_DB), discard: [] },
+                enemy: { hp: 50, shield: 0, mana: 1, maxMana: 1, hand: [], deck: generateDeck(ENEMY_CARD_DB), discard: [] },
+                isProcessing: false
+            };
+
+            // 每回合手牌減少至 5 張
+            for(let i=0; i<5; i++) {
+                drawCard('player');
+                drawCard('enemy');
+            }
+
+            showMessage("你的回合！");
+            updateUI();
+        }
+
+        function updateUI() {
+            // 更新數值與回合數
+            document.getElementById('round-display').innerText = state.round;
+            document.getElementById('player-hp').innerText = state.player.hp;
+            document.getElementById('player-shield').innerText = state.player.shield;
+            document.getElementById('player-mana').innerText = state.player.mana;
+            document.getElementById('player-max-mana').innerText = state.player.maxMana;
+            document.getElementById('player-deck-count').innerText = state.player.deck.length;
+            document.getElementById('player-discard-count').innerText = state.player.discard.length;
+
+            document.getElementById('enemy-hp').innerText = state.enemy.hp;
+            document.getElementById('enemy-shield').innerText = state.enemy.shield;
+            document.getElementById('enemy-mana').innerText = state.enemy.mana;
+            document.getElementById('enemy-max-mana').innerText = state.enemy.maxMana;
+            document.getElementById('enemy-deck-count').innerText = state.enemy.deck.length;
+            document.getElementById('enemy-discard-count').innerText = state.enemy.discard.length;
+
+            // 渲染玩家手牌
+            const playerHandEl = document.getElementById('player-hand');
+            playerHandEl.innerHTML = '';
+            state.player.hand.forEach((card, idx) => {
+                let canPlay = card.cost <= state.player.mana && state.turn === 'player' && !state.isProcessing;
+                
+                let classes = `game-card ${canPlay ? 'card-playable' : 'card-disabled'}`;
+                let dragEvents = canPlay ? `draggable="true" ondragstart="dragStart(event, ${idx})" ondragend="dragEnd(event)" ondblclick="doubleClickPlay(${idx})" onclick="focusCard(event)"` : '';
+
+                let badgeClass = '';
+                let badgeText = '';
+                let bgClass = '';
+                
+                if (card.type === 'food') {
+                    badgeClass = 'val-food';
+                    badgeText = `👥+${card.val}%`;
+                    bgClass = 'bg-food';
+                } else if (card.type === 'attack') {
+                    badgeClass = 'val-attack';
+                    badgeText = `⚔️-${card.val}%`;
+                    bgClass = 'bg-attack';
+                } else if (card.type === 'defense') {
+                    badgeClass = 'val-defense';
+                    badgeText = `🛡️+${card.val}`;
+                    bgClass = 'bg-defense';
+                }
+
+                playerHandEl.innerHTML += `
+                    <div class="${classes} ${bgClass}" ${dragEvents}>
+                        <div class="card-cost">${card.cost}</div>
+                        <div class="card-val ${badgeClass}">${badgeText}</div>
+                        
+                        <div class="card-title text-center fw-bold bg-light border-bottom border-secondary-subtle py-1 small rounded-top text-truncate px-1">${card.name}</div>
+                        <div class="card-emoji flex-grow-1 d-flex align-items-center justify-content-center display-4">${card.img}</div>
+                        <div class="card-desc text-center px-1 py-1 text-secondary bg-white rounded-bottom border-top border-secondary-subtle small fw-medium" style="height: 50px; line-height: 1.2;">
+                            ${card.desc}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 按鈕狀態
+            const btn = document.getElementById('end-turn-btn');
+            if (state.turn === 'player' && !state.isProcessing) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            }
+        }
+
+        function showMessage(msg) {
+            const el = document.getElementById('system-message');
+            el.innerText = msg;
+            el.style.transform = 'scale(1.1)';
+            setTimeout(() => el.style.transform = 'scale(1)', 200);
+        }
+
+        // --- 拖放事件處理 ---
+        function dragStart(e, idx) {
+            if (state.turn !== 'player' || state.isProcessing) {
+                e.preventDefault(); return;
+            }
+            e.dataTransfer.setData('text/plain', idx);
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => e.target.classList.add('opacity-0'), 0);
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('opacity-0');
+            document.getElementById('drop-zone').classList.remove('drop-zone-active');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            document.getElementById('drop-zone').classList.add('drop-zone-active');
+        }
+
+        function dragLeave(e) {
+            document.getElementById('drop-zone').classList.remove('drop-zone-active');
+        }
+
+        function dropCard(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.remove('drop-zone-active');
+            
+            const idxStr = e.dataTransfer.getData('text/plain');
+            if (idxStr !== "") {
+                executePlayCard(parseInt(idxStr, 10), 'player');
+            }
+        }
+
+        function doubleClickPlay(idx) {
+            if (state.turn !== 'player' || state.isProcessing) return;
+            executePlayCard(idx, 'player');
+        }
+
+        // 手機/點擊放大功能
+        function focusCard(e) {
+            // 清除所有卡牌的焦點
+            document.querySelectorAll('.game-card').forEach(c => c.classList.remove('card-focused'));
+            // 給當前點擊的卡牌加上焦點
+            e.currentTarget.classList.add('card-focused');
+        }
+
+        // 點擊空白處時取消放大焦點
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.game-card')) {
+                document.querySelectorAll('.game-card').forEach(c => c.classList.remove('card-focused'));
+            }
+        });
+
+        // --- 核心：執行打出卡牌邏輯 ---
+        async function executePlayCard(idx, role) {
+            const pState = state[role];
+            const targetRole = role === 'player' ? 'enemy' : 'player';
+            const card = pState.hand[idx];
+
+            if (card.cost > pState.mana) {
+                if(role === 'player') showMessage("預算不足！");
+                return;
+            }
+
+            state.isProcessing = true;
+            pState.mana -= card.cost;
+            
+            let playedCard = pState.hand.splice(idx, 1)[0];
+            pState.discard.push(playedCard);
+            
+            updateUI();
+
+            if(role === 'player') showMessage(`你使用了 ${card.name}！`);
+            else showMessage(`對手使用了 ${card.name}！`);
+
+            await showVanishAnimation(card);
+
+            const myHeroEl = document.getElementById(`${role}-hero`);
+            const targetHeroEl = document.getElementById(`${targetRole}-hero`);
+
+            if (card.type === 'food') {
+                pState.hp += card.val;
+                if (pState.hp > 100) pState.hp = 100;
+                showDamageNumber(role, `+${card.val}%`, '#4ade80');
+                
+                myHeroEl.style.transform = 'scale(1.1)';
+                await sleep(400);
+                myHeroEl.style.transform = 'scale(1)';
+                
+            } else if (card.type === 'attack') {
+                let dmg = card.val;
+                let tState = state[targetRole];
+                
+                if (tState.shield > 0) {
+                    if (tState.shield >= dmg) {
+                        tState.shield -= dmg;
+                        showDamageNumber(targetRole, `🛡️抵消`, '#60a5fa');
+                        dmg = 0;
+                    } else {
+                        dmg -= tState.shield;
+                        tState.shield = 0;
+                        showDamageNumber(targetRole, `🛡️破防`, '#fbbf24');
+                    }
+                }
+                
+                if (dmg > 0) {
+                    tState.hp -= dmg;
+                    if (tState.hp < 0) tState.hp = 0;
+                    showDamageNumber(targetRole, `-${dmg}%`, '#f87171');
+                }
+
+                targetHeroEl.classList.add('damage-shake');
+                await sleep(400);
+                targetHeroEl.classList.remove('damage-shake');
+
+            } else if (card.type === 'defense') {
+                pState.shield += card.val;
+                showDamageNumber(role, `🛡️+${card.val}`, '#60a5fa');
+                
+                myHeroEl.style.transform = 'scale(1.1)';
+                await sleep(400);
+                myHeroEl.style.transform = 'scale(1)';
+            }
+
+            checkWinCondition();
+            state.isProcessing = false;
+            updateUI();
+        }
+
+        async function showVanishAnimation(card) {
+            const dropZone = document.getElementById('drop-zone');
+            const animCard = document.createElement('div');
+            animCard.className = "position-absolute bg-light text-dark border border-4 border-secondary rounded-3 d-flex flex-column align-items-center justify-content-center anim-vanish z-3";
+            animCard.style.width = "130px";
+            animCard.style.height = "190px";
+            animCard.style.boxShadow = "0 0 30px rgba(255,255,255,0.8)";
+            
+            animCard.innerHTML = `
+                <div class="display-1">${card.img}</div>
+                <div class="fw-bold mt-3 bg-white px-2 rounded border">${card.name}</div>
+            `;
+            
+            dropZone.appendChild(animCard);
+            await sleep(600); 
+            animCard.remove();
+        }
+
+        function showDamageNumber(targetRole, text, colorHex) {
+            const heroEl = document.getElementById(`${targetRole}-hero`);
+            const dmgEl = document.createElement('div');
+            dmgEl.className = "anim-damage";
+            dmgEl.style.color = colorHex;
+            dmgEl.innerText = text;
+            heroEl.appendChild(dmgEl);
+            
+            setTimeout(() => { if(dmgEl.parentElement) dmgEl.remove(); }, 1000);
+        }
+
+        // 常規提早結束判定 (若有人達到 100% 或歸 0)
+        function checkWinCondition() {
+            if (state.player.hp >= 100 || state.enemy.hp <= 0) {
+                endGame("🎉 勝利！你成功稱霸了夜市！");
+            } else if (state.enemy.hp >= 100 || state.player.hp <= 0) {
+                endGame("😢 敗北...你的攤位無人問津。");
+            }
+        }
+
+        // 十回合強制結算判定
+        function evaluateRoundLimitWin() {
+            state.isProcessing = true;
+            updateUI();
+            if (state.player.hp > state.enemy.hp) {
+                endGame("🎉 十回合結算：勝利！你的營業額超越對手！");
+            } else if (state.enemy.hp > state.player.hp) {
+                endGame("😢 十回合結算：敗北...對手的營業額更高。");
+            } else {
+                endGame("🤝 十回合結算：平手！雙方勢均力敵。");
+            }
+        }
+
+        function endGame(msg) {
+            state.isProcessing = true;
+            const screen = document.getElementById('game-over-screen');
+            document.getElementById('game-over-text').innerText = msg;
+            screen.classList.remove('d-none');
+        }
+
+        // --- 回合控制與 AI ---
+        async function endTurn() {
+            if(state.turn !== 'player' || state.isProcessing) return;
+            state.turn = 'enemy';
+            updateUI();
+            await startEnemyTurn();
+        }
+
+        async function startEnemyTurn() {
+            state.isProcessing = true;
+            showMessage("對手營業中...");
+            
+            while(state.enemy.hand.length > 0) {
+                state.enemy.discard.push(state.enemy.hand.pop());
+            }
+
+            // 預算(法力)上限為 6 點，配合最高 3 點的卡牌
+            if(state.enemy.maxMana < 6) state.enemy.maxMana++;
+            state.enemy.mana = state.enemy.maxMana;
+            
+            for(let i=0; i<5; i++) drawCard('enemy'); // 抽5張
+            
+            updateUI();
+            await sleep(1000);
+
+            let canPlay = true;
+            while(canPlay && state.player.hp > 0 && state.enemy.hp < 100) {
+                canPlay = false;
+                let sortedHand = state.enemy.hand.map((c, i) => ({...c, index: i})).sort((a,b) => b.cost - a.cost);
+                
+                for(let card of sortedHand) {
+                    if (card.cost <= state.enemy.mana) {
+                        await executePlayCard(card.index, 'enemy');
+                        await sleep(500);
+                        canPlay = true;
+                        break; 
+                    }
+                }
+            }
+
+            if (state.player.hp > 0 && state.enemy.hp < 100) {
+                startPlayerTurn();
+            }
+        }
+
+        function startPlayerTurn() {
+            // 十回合限制判定
+            state.round++;
+            if (state.round > 10) {
+                evaluateRoundLimitWin();
+                return;
+            }
+
+            state.turn = 'player';
+            
+            while(state.player.hand.length > 0) {
+                state.player.discard.push(state.player.hand.pop());
+            }
+
+            if(state.player.maxMana < 6) state.player.maxMana++;
+            state.player.mana = state.player.maxMana;
+            
+            for(let i=0; i<5; i++) drawCard('player'); // 抽5張
+            
+            showMessage("開始營業！拖曳小吃吸客");
+            state.isProcessing = false;
+            updateUI();
+        }
+
+        // 啟動遊戲
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>
