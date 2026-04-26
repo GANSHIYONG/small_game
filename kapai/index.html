@@ -51,10 +51,11 @@
         }
         .shop-info-bar.attack-mode { background-color: #ef4444; }
 
-        /* 右上角圓形選單按鈕 */
+        /* 右上角固定選單按鈕 */
         .circle-menu-btn {
-            width: 70px; height: 70px; border-radius: 50%; background-color: #8b5cf6; color: white;
-            border: 3px solid white; font-size: 1.8rem; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: fixed; top: 15px; right: 15px; z-index: 1500;
+            width: 60px; height: 60px; border-radius: 50%; background-color: #8b5cf6; color: white;
+            border: 3px solid white; font-size: 1.5rem; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex; align-items: center; justify-content: center;
         }
         .circle-menu-btn:hover { transform: rotate(15deg) scale(1.1); background-color: #7c3aed; }
@@ -86,6 +87,21 @@
         .mini-card .fs-2 { font-size: 1.5rem !important; margin: 4px 0; }
         .mini-card .fw-bold.small { font-size: 0.75rem !important; line-height: 1.2; }
         .mini-card .btn-sm { font-size: 0.7rem !important; padding: 2px 4px; }
+
+        /* 分割線樣式 */
+        .card-divider {
+            grid-column: 1 / span 5;
+            text-align: center;
+            font-weight: 900;
+            color: #1e3a8a;
+            border-bottom: 2px dashed #1e3a8a;
+            line-height: 0.1em;
+            margin: 15px 0 10px;
+        }
+        .card-divider span {
+            background: #a9c2f0;
+            padding: 0 10px;
+        }
 
         /* =========================================
            戰鬥畫面特效樣式
@@ -143,6 +159,11 @@
 </head>
 <body>
 
+    <!-- 全域固定選單按鈕 (起始畫面 z-index 較高會蓋住它) -->
+    <button class="circle-menu-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#gameMenuModal">
+        <i class="fa-solid fa-bars-staggered"></i>
+    </button>
+
     <!-- 自訂提示彈窗 -->
     <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
       <div class="modal-dialog modal-dialog-centered">
@@ -159,7 +180,7 @@
       </div>
     </div>
 
-    <!-- 遊戲暫停選單 (由右上角圖示觸發) -->
+    <!-- 遊戲暫停選單 -->
     <div class="modal fade" id="gameMenuModal" tabindex="-1" aria-hidden="true" style="z-index: 9998;">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -193,11 +214,12 @@
         <h2 class="fw-bold text-warning mb-2" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.8);">戰勝對手！</h2>
         <h4 class="fw-bold text-white mb-4">請從對手的卡牌庫中選擇 2 張加入您的卡牌庫：</h4>
         <div id="loot-cards-container" class="d-flex flex-wrap gap-3 justify-content-center" style="max-width: 800px; padding: 20px;"></div>
-        <button class="btn btn-success btn-lg mt-4 px-5 fw-bold shadow-lg" onclick="confirmLoot()">確認收入</button>
+        <!-- 確認按鈕設置為固定在右下角 -->
+        <button class="btn btn-success btn-lg px-5 fw-bold shadow-lg position-fixed" style="bottom: 30px; right: 30px; z-index: 2600;" onclick="confirmLoot()">確認收入</button>
     </div>
 
     <!-- =========================================
-         視圖 0：起始創建畫面
+         視圖 0：起始創建畫面 (z-index: 2000 會蓋住選單按鈕)
          ========================================= -->
     <div id="start-screen-view" class="d-flex flex-column align-items-center justify-content-center px-3">
         <h1 class="display-3 fw-bold mb-4 text-warning text-center">美食街大亨</h1>
@@ -321,11 +343,6 @@
                 </div>
             </div>
             <div class="col-12 col-md-3 d-flex flex-column order-3 gap-3">
-                <div class="d-flex justify-content-end">
-                    <button class="circle-menu-btn shadow-sm" data-bs-toggle="modal" data-bs-target="#gameMenuModal">
-                        <i class="fa-solid fa-bars-staggered"></i>
-                    </button>
-                </div>
                 <div class="city-selection-view flex-grow-1 shadow-sm p-3 mt-md-auto d-flex flex-column align-items-center">
                     <p class="text-secondary fw-bold small mb-3">當前營業城市</p>
                     <div class="city-grid" id="main-city-grid">
@@ -346,7 +363,7 @@
             <h1 id="game-over-text" class="display-3 fw-bold mb-4 text-white text-center text-shadow"></h1>
             <button onclick="returnToMainMenu()" class="btn btn-primary btn-lg px-5 py-3 fw-bold border border-3 border-white shadow-lg fs-3">返回美食街</button>
         </div>
-        <div class="position-absolute top-0 end-0 mt-3 me-3 me-md-5 text-warning fw-bold fs-5 z-3">回合: <span id="round-display">1</span></div>
+        
         <div class="row pt-4 pb-2 z-3"><div class="col-12 d-flex justify-content-center"><div id="system-message" class="sys-message">對戰開始！</div></div></div>
         <div class="row flex-grow-1 align-items-center justify-content-center px-lg-5 w-100 m-0">
             <div class="col-6 col-md-4 order-1 d-flex flex-column align-items-center position-relative">
@@ -363,7 +380,14 @@
                 <div id="drop-zone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event)" class="drop-zone shadow-lg"><div class="text-secondary fs-4 fw-bold mb-2">🍽️ 營業區域</div><div class="text-secondary small text-center px-3">雙擊出戰</div></div>
             </div>
         </div>
-        <div class="fixed-bottom w-100 z-3 d-flex flex-row align-items-end px-3 pb-3 gap-3" style="pointer-events: none;"><div id="player-hand" class="hand-container flex-grow-1"></div><div class="flex-shrink-0 mb-4 me-md-4" style="pointer-events: auto;"><button id="end-turn-btn" onclick="endTurn()" class="btn btn-warning btn-lg fw-bold border border-2 border-white shadow-lg rounded-pill px-4 py-3">結束回合</button></div></div>
+        <div class="fixed-bottom w-100 z-3 d-flex flex-row align-items-end px-3 pb-3 gap-3" style="pointer-events: none;">
+            <div id="player-hand" class="hand-container flex-grow-1"></div>
+            <div class="flex-shrink-0 mb-4 me-md-4 d-flex flex-column align-items-center" style="pointer-events: auto;">
+                <!-- 回合次數現在移動到結束按鈕上方 -->
+                <div class="text-warning fw-bold fs-5 mb-2">回合: <span id="round-display">1</span></div>
+                <button id="end-turn-btn" onclick="endTurn()" class="btn btn-warning btn-lg fw-bold border border-2 border-white shadow-lg rounded-pill px-4 py-3">結束回合</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -375,6 +399,7 @@
         let playerStamina = 5; const maxStamina = 5; let currentDay = 1; let currentMoney = 100;
         let baseDailyEarnings = 0; let todayOperateEarnings = 0; let operateShopYield = 30;
         let initialPlayerManaForBattle = 0; let lastBattleReturnedMoney = 0;
+        let selectedLoot = [];
         
         let upgrades = {
             eq: { name: '設備升級', level: 0, maxLevel: 5, baseCost: 100, baseReward: 10 },
@@ -511,19 +536,14 @@
                 return PLAYER_CARD_DB.find(c => c.id === id) || MASTER_ENEMY_CARDS[id];
             }).filter(c => c);
 
-            cardsToRender.sort((a, b) => {
-                const aEq = playerDeck.includes(a.id) ? 0 : 1;
-                const bEq = playerDeck.includes(b.id) ? 0 : 1;
-                if (aEq !== bEq) return aEq - bEq;
-                return typePriority[a.type] - typePriority[b.type];
-            });
+            // 分離已裝備與未裝備
+            const equippedCards = cardsToRender.filter(c => playerDeck.includes(c.id)).sort((a, b) => typePriority[a.type] - typePriority[b.type]);
+            const unequippedCards = cardsToRender.filter(c => !playerDeck.includes(c.id)).sort((a, b) => typePriority[a.type] - typePriority[b.type]);
 
-            cardsToRender.forEach(card => {
-                let isEquipped = playerDeck.includes(card.id);
+            const renderCardHTML = (card, isEquipped) => {
                 let badgeClass = card.type === 'food' ? 'val-food' : (card.type === 'attack' ? 'val-attack' : 'val-defense');
                 let badgeText = card.type === 'food' ? `👥+${card.val}%` : (card.type === 'attack' ? `⚔️-${card.val}%` : `🛡️+${card.val}`);
-                
-                grid.innerHTML += `
+                return `
                     <div class="mini-card ${isEquipped ? 'equipped' : ''}">
                         <div class="badge bg-dark mb-1" style="font-size:0.6rem;">${card.cost}費</div>
                         <div class="badge ${badgeClass} mb-1" style="font-size:0.6rem;">${badgeText}</div>
@@ -533,7 +553,23 @@
                             ${isEquipped ? 'ON' : 'OFF'}
                         </button>
                     </div>`;
-            });
+            };
+
+            // 渲染已裝備部分
+            grid.innerHTML += `<div class="card-divider"><span>已經裝備</span></div>`;
+            if (equippedCards.length === 0) {
+                grid.innerHTML += `<div class="col-12 text-center text-secondary small py-2" style="grid-column: 1 / span 5;">尚未裝備任何卡牌</div>`;
+            } else {
+                equippedCards.forEach(c => grid.innerHTML += renderCardHTML(c, true));
+            }
+
+            // 渲染未裝備部分
+            grid.innerHTML += `<div class="card-divider"><span>尚未裝備</span></div>`;
+            if (unequippedCards.length === 0) {
+                grid.innerHTML += `<div class="col-12 text-center text-secondary small py-2" style="grid-column: 1 / span 5;">所有卡牌皆已裝備</div>`;
+            } else {
+                unequippedCards.forEach(c => grid.innerHTML += renderCardHTML(c, false));
+            }
         }
 
         function toggleCard(id) {
@@ -647,6 +683,10 @@
             const opp = OPPONENTS_DB[selectedOpponentId];
             document.getElementById('enemy-hero-name').innerText = opp.name;
             const pDeckCards = playerDeck.map(id => PLAYER_CARD_DB.find(c => c.id === id) || MASTER_ENEMY_CARDS[id]);
+            
+            // 重要：重置戰鬥勝利旗標，否則第二場對手出完牌會卡死
+            currentBattleWon = false; 
+
             state = {
                 round: 1, turn: 'player',
                 player: { hp: opp.playerHp, shield: 0, mana: initialPlayerManaForBattle, hand: [], deck: shuffle(clone(pDeckCards)), discard: [] },
@@ -761,6 +801,7 @@
                 play = false; let hand = state.enemy.hand;
                 for(let i=0; i<hand.length; i++) { if(hand[i].cost <= state.enemy.mana) { await executePlayCard(i, 'enemy'); play = true; await sleep(500); break; } }
             }
+            // 修復點：由於全域變數 currentBattleWon 已在 initGame 重置，這裡現在會正常執行
             if(!currentBattleWon) { el.innerText = "你的回合！"; el.style.transform = "scale(1)"; startPlayerTurn(); }
         }
         function startPlayerTurn() { state.round++; if(state.round > 10) return evaluateRoundLimitWin(); state.turn = 'player'; while(state.player.hand.length < 5) drawCard('player'); updateUI(); }
@@ -813,7 +854,7 @@
             const container = document.getElementById('loot-cards-container'); container.innerHTML = '';
             ENEMY_POOLS[selectedOpponentId].forEach(id => {
                 const c = MASTER_ENEMY_CARDS[id];
-                // 修正：這裡先前變數命名錯誤導致報錯，現已修正為 c.type 與 c.val
+                // 修正點：將原先誤寫的 card.type 修正為 c.type
                 let badgeClass = c.type === 'food' ? 'val-food' : (c.type === 'attack' ? 'val-attack' : 'val-defense');
                 let badgeText = c.type === 'food' ? `👥+${c.val}%` : (c.type === 'attack' ? `⚔️-${c.val}%` : `🛡️+${c.val}`);
                 container.innerHTML += `<div id="loot-card-${id}" class="game-card bg-food" style="margin-left:0; cursor:pointer;" onclick="toggleLoot(${id})">
