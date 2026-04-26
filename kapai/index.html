@@ -23,7 +23,7 @@
         }
 
         /* =========================================
-           經營畫面樣式
+           視圖與佈局
            ========================================= */
         #start-screen-view {
             background: radial-gradient(ellipse at center, #1e293b, #0f172a);
@@ -51,50 +51,51 @@
         }
         .shop-info-bar.attack-mode { background-color: #ef4444; }
 
+        /* 右上角圓形選單按鈕 */
         .circle-menu-btn {
             width: 70px; height: 70px; border-radius: 50%; background-color: #8b5cf6; color: white;
             border: 3px solid white; font-size: 1.8rem; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
+        .circle-menu-btn:hover { transform: rotate(15deg) scale(1.1); background-color: #7c3aed; }
 
-        .city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 12px; width: 100%; padding: 5px; }
+        .city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 12px; width: 100%; overflow-y: auto; padding: 5px; }
         .city-btn {
             background-color: white; color: #4f46e5; border: 2px solid #a5b4fc; border-radius: 12px;
             padding: 10px 5px; font-weight: 900; font-size: 0.9rem; text-align: center; cursor: pointer; transition: all 0.2s;
         }
         .city-btn:hover { background-color: #6366f1; color: white; transform: translateY(-3px); }
-        .selected-city-btn { background-color: #10b981 !important; color: white !important; border-color: #059669 !important; }
+        .selected-city-btn { background-color: #10b981 !important; color: white !important; border-color: #059669 !important; cursor: default !important; }
         .locked-city-btn { background-color: #e2e8f0 !important; color: #94a3b8 !important; border-color: #cbd5e1 !important; cursor: not-allowed !important; }
+        .locked-city-btn:hover { transform: none !important; }
 
-        .card-library-divider {
-            width: 100%; border-top: 3px dashed rgba(30, 58, 138, 0.3); margin: 30px 0; position: relative;
-        }
-        .card-library-divider::after {
-            content: "備用卡牌收藏"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-            background: #a9c2f0; padding: 0 15px; font-weight: 900; color: #1e3a8a; font-size: 0.9rem;
-        }
+        .locked-opponent-btn { background-color: #e2e8f0 !important; color: #94a3b8 !important; opacity: 0.8; cursor: not-allowed; }
 
-        .mini-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+        /* 卡牌庫迷你卡牌樣式 (一排五張) */
+        .mini-card-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 10px; 
+        }
         .mini-card {
-            background: white; border: 3px solid #cbd5e1; border-radius: 12px; padding: 8px;
-            text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column;
-            transition: all 0.2s; position: relative;
+            background: white; border: 2px solid #cbd5e1; border-radius: 10px; padding: 6px;
+            text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+            transition: all 0.2s; height: auto; position: relative;
         }
         .mini-card.equipped { border-color: #10b981; background-color: #f0fdf4; box-shadow: 0 0 10px rgba(16,185,129,0.3); }
+        .mini-card .fs-2 { font-size: 1.5rem !important; margin: 4px 0; }
+        .mini-card .fw-bold.small { font-size: 0.75rem !important; line-height: 1.2; }
+        .mini-card .btn-sm { font-size: 0.7rem !important; padding: 2px 4px; }
 
         /* =========================================
-           戰鬥畫面與動畫
+           戰鬥畫面特效樣式
            ========================================= */
         #battle-view { background: radial-gradient(ellipse at center, #1e293b, #0f172a); color: white; }
+        .hero-avatar { width: 150px; height: 150px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; transition: transform 0.3s; border-width: 8px !important; }
+        @media (max-width: 768px) { .hero-avatar { width: 95px; height: 95px; border-width: 5px !important; } }
+        .hero-player { background-color: #1e3a8a; border-style: solid; border-color: #3b82f6; box-shadow: 0 0 30px rgba(59,130,246,0.5); }
+        .hero-enemy { background-color: #7f1d1d; border-style: solid; border-color: #dc2626; box-shadow: 0 0 30px rgba(220,38,38,0.5); }
         
-        .hero-avatar { 
-            width: 150px; height: 150px; border-radius: 50%; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; position: relative; z-index: 10; 
-            transition: transform 0.3s; border: 8px solid transparent; 
-        }
-        .hero-player { background-color: #1e3a8a; border-color: #3b82f6; box-shadow: 0 0 30px rgba(59,130,246,0.5); }
-        .hero-enemy { background-color: #7f1d1d; border-color: #dc2626; box-shadow: 0 0 30px rgba(220,38,38,0.5); }
-
         .stats-badge {
             position: absolute; bottom: -20px; background: #1e293b; padding: 5px 20px;
             border-radius: 20px; font-weight: bold; border: 2px solid; white-space: nowrap;
@@ -102,43 +103,55 @@
         .stats-player { border-color: #60a5fa; color: #93c5fd; }
         .stats-enemy { border-color: #f87171; color: #fca5a5; }
 
+        .info-panel { position: absolute; top: 0; display: flex; flex-direction: column; gap: 10px; z-index: 5; }
+        .info-panel.left { left: -30px; }
+        .info-panel.right { right: -30px; }
+        .info-box { background: #1e293b; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; text-align: center; border: 2px solid #64748b; }
+
         .drop-zone {
             width: 320px; height: 160px; border-radius: 20px; border: 4px dashed #64748b; background: rgba(30, 41, 59, 0.3);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; z-index: 20; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; z-index: 20;
+            position: relative;
         }
         
-        .game-card { 
-            width: 135px; height: 195px; background: #f8fafc; border: 4px solid #cbd5e1; border-radius: 12px; 
-            display: flex; flex-direction: column; position: relative; flex-shrink: 0; color: #0f172a; 
-            margin-left: -65px; transition: transform 0.2s; z-index: 5; box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-        }
+        .game-card { width: 135px; height: 195px; background: #f8fafc; border: 4px solid #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; position: relative; flex-shrink: 0; color: #0f172a; margin-left: -65px; transition: transform 0.2s; z-index: 5; }
         .game-card:first-child { margin-left: 0; }
-        .card-playable { box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.6); border-color: #22c55e; cursor: pointer; }
+        .card-playable { box-shadow: 0 0 15px 5px rgba(34, 197, 94, 0.6); border-color: #22c55e; cursor: grab; }
         .card-playable:hover { transform: translateY(-40px) scale(1.1); z-index: 100; }
-        .card-disabled { opacity: 0.6; filter: grayscale(0.6); cursor: not-allowed; }
+        .card-disabled { opacity: 0.6; filter: grayscale(0.5); cursor: not-allowed; }
 
-        /* 特效動畫 */
-        @keyframes card-draw { 0% { transform: translateY(150px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-        .card-anim-draw { animation: card-draw 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.27) forwards; }
-        .card-playing-transit { position: fixed !important; z-index: 1000 !important; transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: none; }
-        @keyframes vanish-burn { 0% { transform: scale(1); opacity: 1; } 40% { transform: scale(1.2); opacity: 0.9; filter: brightness(1.5) drop-shadow(0 0 20px #fbbf24); } 100% { transform: scale(0.5); opacity: 0; filter: brightness(2) blur(5px); } }
-        .anim-vanish { animation: vanish-burn 0.6s forwards cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes float-up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
-        .anim-damage { position: absolute; font-size: 3rem; font-weight: 900; text-shadow: 2px 2px 0 #000; animation: float-up 1s forwards ease-out; pointer-events: none; z-index: 60; }
-        .damage-shake { animation: shake 0.4s 1; }
-        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-10px, 0); } 75% { transform: translate(10px, 0); } }
+        .card-cost { position: absolute; top: -12px; left: -12px; width: 35px; height: 35px; background: #1e293b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid #fbbf24; z-index: 11; }
+        .card-val { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); padding: 0 12px; height: 30px; color: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 2px solid white; white-space: nowrap; z-index: 11; font-size: 0.85rem; }
+        
+        .val-food { background: #16a34a; } .val-attack { background: #dc2626; } .val-defense { background: #3b82f6; }
+        .bg-food { background: linear-gradient(to bottom, #dcfce7, #f8fafc); } .bg-attack { background: linear-gradient(to bottom, #fee2e2, #f8fafc); } .bg-defense { background: linear-gradient(to bottom, #dbeafe, #f8fafc); }
+        .text-bright-yellow { color: #ffeb3b !important; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); }
+
         .hand-container { display: flex; justify-content: flex-start; align-items: flex-end; padding: 50px 10px 10px; overflow: visible; flex-wrap: nowrap; pointer-events: auto; }
-        .sys-message { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(4px); border: 2px solid #64748b; padding: 10px 30px; border-radius: 50px; font-weight: 900; color: #fbbf24; box-shadow: 0 10px 15px rgba(0,0,0,0.5); }
+        .sys-message { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(4px); border: 2px solid #64748b; padding: 10px 30px; border-radius: 50px; font-weight: 900; color: #fbbf24; box-shadow: 0 10px 15px rgba(0,0,0,0.5); transition: transform 0.2s; }
+        .shield-display { font-size: 1.5rem; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); z-index: 10; }
+        
+        @keyframes vanish-burn { 0% { transform: scale(1); opacity: 1; filter: brightness(1); } 40% { transform: scale(1.2); opacity: 0.9; filter: brightness(1.5) drop-shadow(0 0 20px #fbbf24); } 100% { transform: scale(0.5); opacity: 0; filter: brightness(2) blur(5px); } }
+        .anim-vanish { animation: vanish-burn 0.6s forwards cubic-bezier(0.4, 0, 0.2, 1); }
+
+        @keyframes float-up { 0% { transform: translateY(0) scale(1); opacity: 1; } 50% { transform: translateY(-40px) scale(1.2); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
+        .anim-damage { position: absolute; font-size: 3rem; font-weight: 900; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; animation: float-up 1s forwards ease-out; pointer-events: none; z-index: 60; }
+
+        @keyframes shake { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 20% { transform: translate(-8px, -8px) rotate(-3deg); } 40% { transform: translate(8px, 0px) rotate(3deg); } 60% { transform: translate(-8px, 8px) rotate(-3deg); } 80% { transform: translate(8px, -8px) rotate(3deg); } }
+        .damage-shake { animation: shake 0.4s 1; filter: brightness(0.7) sepia(1) hue-rotate(-50deg) saturate(5); }
     </style>
 </head>
 <body>
 
-    <!-- 系統彈窗 -->
+    <!-- 自訂提示彈窗 -->
     <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4 text-center">
-          <div class="modal-header bg-warning text-dark border-0 rounded-top-4"><h5 class="modal-title fw-bold w-100">系統提示</h5></div>
-          <div class="modal-body fs-5 fw-bold py-4" id="customAlertMessage"></div>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-warning text-dark border-0 rounded-top-4">
+            <h5 class="modal-title fw-bold">系統提示</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body fs-5 fw-bold text-center py-4" id="customAlertMessage"></div>
           <div class="modal-footer border-0 justify-content-center">
             <button type="button" class="btn btn-primary px-5 fw-bold rounded-pill" data-bs-dismiss="modal">確定</button>
           </div>
@@ -146,42 +159,55 @@
       </div>
     </div>
 
-    <!-- 選單彈窗 -->
+    <!-- 遊戲暫停選單 (由右上角圖示觸發) -->
     <div class="modal fade" id="gameMenuModal" tabindex="-1" aria-hidden="true" style="z-index: 9998;">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-center">
-          <div class="modal-header bg-dark text-white border-0 py-3"><h5 class="modal-title fw-bold w-100">遊戲暫停</h5></div>
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+          <div class="modal-header bg-dark text-white border-0 py-3">
+            <h5 class="modal-title fw-bold mx-auto">遊戲選單</h5>
+          </div>
           <div class="modal-body d-flex flex-column gap-3 p-4 bg-light">
-            <button class="btn btn-primary btn-lg fw-bold py-3 rounded-pill shadow-sm" data-bs-dismiss="modal"><i class="fa-solid fa-play me-2"></i> 繼續遊戲</button>
-            <button class="btn btn-outline-danger btn-lg fw-bold py-3 rounded-pill shadow-sm" onclick="location.reload()"><i class="fa-solid fa-rotate-left me-2"></i> 重新開始</button>
+            <button type="button" class="btn btn-primary btn-lg fw-bold py-3 rounded-pill shadow-sm" data-bs-dismiss="modal">
+                <i class="fa-solid fa-play me-2"></i> 繼續遊戲
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-lg fw-bold py-3 rounded-pill shadow-sm" onclick="location.reload()">
+                <i class="fa-solid fa-rotate-left me-2"></i> 重新開始
+            </button>
+          </div>
+          <div class="modal-footer border-0 bg-light justify-content-center pb-4 small text-secondary">
+            美食街大亨 v2.5 - 版權所有
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 結局與戰利品視窗 -->
+    <!-- 全域結局遮罩 -->
     <div id="campaign-over-screen" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column align-items-center justify-content-center" style="z-index: 3000; backdrop-filter: blur(8px);">
-        <h1 class="display-2 fw-bold mb-4 text-white text-center">遊戲結束</h1>
-        <h3 id="campaign-over-text" class="fw-bold mb-5 text-warning text-center lh-base"></h3>
-        <button onclick="location.reload()" class="btn btn-danger btn-lg px-5 py-3 fw-bold shadow-lg fs-3">重新開始</button>
+        <h1 class="display-2 fw-bold mb-4 text-white text-center" style="text-shadow: 3px 3px 10px rgba(0,0,0,0.8);">遊戲結束</h1>
+        <h3 id="campaign-over-text" class="fw-bold mb-5 text-warning text-center lh-base" style="white-space: pre-line; text-shadow: 2px 2px 5px rgba(0,0,0,0.8);"></h3>
+        <button onclick="location.reload()" class="btn btn-danger btn-lg px-5 py-3 fw-bold border border-3 border-white shadow-lg fs-3">重新開始遊戲</button>
     </div>
+
+    <!-- 戰利品選擇遮罩 -->
     <div id="loot-screen-view" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column align-items-center justify-content-center" style="z-index: 2500; backdrop-filter: blur(8px);">
-        <h2 class="fw-bold text-warning mb-2">戰勝對手！</h2>
-        <h4 class="fw-bold text-white mb-4">請選擇 2 張卡牌加入收藏庫：</h4>
+        <h2 class="fw-bold text-warning mb-2" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.8);">戰勝對手！</h2>
+        <h4 class="fw-bold text-white mb-4">請從對手的卡牌庫中選擇 2 張加入您的卡牌庫：</h4>
         <div id="loot-cards-container" class="d-flex flex-wrap gap-3 justify-content-center" style="max-width: 800px; padding: 20px;"></div>
         <button class="btn btn-success btn-lg mt-4 px-5 fw-bold shadow-lg" onclick="confirmLoot()">確認收入</button>
     </div>
 
-    <!-- 視圖 0：起始創建畫面 -->
+    <!-- =========================================
+         視圖 0：起始創建畫面
+         ========================================= -->
     <div id="start-screen-view" class="d-flex flex-column align-items-center justify-content-center px-3">
         <h1 class="display-3 fw-bold mb-4 text-warning text-center">美食街大亨</h1>
         <div class="bg-light text-dark p-4 p-md-5 rounded-4 shadow-lg w-100" style="max-width: 500px;">
             <div class="mb-4">
-                <label class="form-label fw-bold fs-5 text-primary-emphasis">🏪 請輸入攤位名稱：</label>
+                <label class="form-label fw-bold fs-5 text-primary-emphasis">🏪 請輸入您的攤位名稱：</label>
                 <input type="text" id="stall-name-input" class="form-control form-control-lg border-2 border-primary" placeholder="例如：阿明地瓜球" maxlength="12">
             </div>
             <div class="mb-4">
-                <label class="form-label fw-bold fs-5 text-primary-emphasis">📍 選擇起始地區：</label>
+                <label class="form-label fw-bold fs-5 text-primary-emphasis">📍 選擇起始營業地區 (南部)：</label>
                 <div class="city-grid mt-2" id="start-city-grid">
                     <div class="city-btn" onclick="selectInitialCity('嘉義市', this)">嘉義市</div>
                     <div class="city-btn" onclick="selectInitialCity('嘉義縣', this)">嘉義縣</div>
@@ -194,10 +220,14 @@
         </div>
     </div>
 
-    <!-- 視圖 1：經營主畫面 -->
+    <!-- =========================================
+         視圖 1：經營主選單
+         ========================================= -->
     <div id="main-menu-view" class="d-none container-fluid vh-100 py-3 px-md-4 flex-column">
         <div class="row mb-2">
-            <div class="col-12"><div id="menu-sys-message" class="alert alert-success fw-bold text-center m-0 shadow-sm"></div></div>
+            <div class="col-12">
+                <div id="menu-sys-message" class="alert alert-success fw-bold text-center m-0 shadow-sm"></div>
+            </div>
         </div>
         <div class="row flex-grow-1">
             <div class="col-12 col-md-2 d-flex flex-row flex-md-column justify-content-center align-items-center gap-3 gap-md-4 mb-3 mb-md-0 order-2 order-md-1">
@@ -212,44 +242,47 @@
             </div>
 
             <div class="col-12 col-md-7 d-flex flex-column gap-3 order-1 order-md-2 mb-3 mb-md-0">
+                <!-- 經營分頁 -->
                 <div id="tab-content-manage" class="central-panel d-flex flex-column align-items-center">
                     <h3 class="fw-bold mb-3">設施與營運升級</h3>
                     <div class="w-100 border-bottom pb-4 mb-4 text-center">
+                        <p class="fw-bold text-primary-emphasis mb-2">親自下海招攬客人！</p>
                         <button class="btn btn-lg btn-success fw-bold px-5 shadow rounded-pill" onclick="operateShop()">
-                            <span id="operate-shop-btn-text">商店經營 (賺取 $30)</span> <br><span class="fs-6 small">消耗 2 點體力</span>
+                            <span id="operate-shop-btn-text">商店經營 (賺取 $30)</span> <br><span class="fs-6">消耗 2 點體力</span>
                         </button>
                     </div>
-                    <!-- 升級項目 -->
                     <div class="w-100 bg-white p-3 rounded-4 shadow-sm mb-3 d-flex justify-content-between align-items-center border border-warning">
-                        <div><div class="fw-bold fs-5">設備升級 <span id="eq-lvl-badge" class="badge bg-secondary">Lv.0</span></div></div>
-                        <div class="text-end"><div id="eq-reward-text" class="fw-bold text-success small">+ $10 / 日</div><button id="eq-btn" class="btn btn-warning fw-bold btn-sm mt-1" onclick="buyUpgrade('eq')">花費 $100</button></div>
+                        <div><div class="fw-bold fs-5">設備升級 <span id="eq-lvl-badge" class="badge bg-secondary">Lv.0</span></div><div class="text-secondary small">提升製作效率</div></div>
+                        <div class="text-end"><div id="eq-reward-text" class="fw-bold text-success">+ $10 / 日</div><button id="eq-btn" class="btn btn-warning fw-bold btn-sm mt-1" onclick="buyUpgrade('eq')">花費 $100</button></div>
                     </div>
                     <div class="w-100 bg-white p-3 rounded-4 shadow-sm mb-3 d-flex justify-content-between align-items-center border border-warning">
-                        <div><div class="fw-bold fs-5">小吃升級 <span id="snack-lvl-badge" class="badge bg-secondary">Lv.0</span></div></div>
-                        <div class="text-end"><div id="snack-reward-text" class="fw-bold text-success small">+ $10 / 日</div><button id="snack-btn" class="btn btn-warning fw-bold btn-sm mt-1" onclick="buyUpgrade('snack')">花費 $100</button></div>
+                        <div><div class="fw-bold fs-5">小吃升級 <span id="snack-lvl-badge" class="badge bg-secondary">Lv.0</span></div><div class="text-secondary small">改良口味配方</div></div>
+                        <div class="text-end"><div id="snack-reward-text" class="fw-bold text-success">+ $10 / 日</div><button id="snack-btn" class="btn btn-warning fw-bold btn-sm mt-1" onclick="buyUpgrade('snack')">花費 $100</button></div>
                     </div>
                     <div class="w-100 bg-white p-3 rounded-4 shadow-sm mb-4 d-flex justify-content-between align-items-center border border-warning">
-                        <div><div class="fw-bold fs-5">員工培訓 <span id="staff-lvl-badge" class="badge bg-secondary">Lv.0</span></div></div>
-                        <div class="text-end"><div id="staff-reward-text" class="fw-bold text-success small">+ $10 / 日</div><button id="staff-btn" class="btn btn-warning fw-bold btn-sm mt-1" onclick="buyUpgrade('staff')">花費 $100</button></div>
+                        <div><div class="fw-bold fs-5">員工培訓 <span id="staff-lvl-badge" class="badge bg-secondary">Lv.0</span></div><div class="text-secondary small">增進服務態度</div></div>
+                        <div class="text-end"><div id="staff-reward-text" class="fw-bold text-success">+ $10 / 日</div><button id="staff-btn" class="btn btn-warning fw-bold btn-sm mt-1" onclick="buyUpgrade('staff')">花費 $100</button></div>
                     </div>
                 </div>
 
-                <div id="tab-content-battle" class="central-panel d-none d-flex flex-column align-items-center text-center">
+                <!-- 對戰分頁 -->
+                <div id="tab-content-battle" class="central-panel d-none d-flex flex-column align-items-center">
                     <h3 class="fw-bold mb-1">美食街經營概況</h3>
-                    <div class="bg-white px-4 py-2 rounded-pill shadow-sm fw-bold fs-5 text-success border border-3 border-success mb-3 mt-2" style="cursor:pointer;" onclick="selectPlayerShop()">🏪 <span class="player-stall-name-display">我方攤位</span></div>
+                    <p class="text-primary-emphasis fw-bold mb-3">請點擊選擇挑戰對象查看情報</p>
+                    <div class="bg-white px-4 py-2 rounded-pill shadow-sm fw-bold fs-5 text-success border border-3 border-success mb-3" style="cursor:pointer;" onclick="selectPlayerShop()">🏪 <span class="player-stall-name-display">我方攤位</span></div>
                     <div class="w-100 d-flex flex-column gap-2">
-                        <div class="bg-white bg-opacity-50 p-2 rounded-4 shadow-sm border border-danger">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-4 shadow-sm border border-danger text-center">
                             <div class="fw-bold text-danger mb-2">👑 區域霸主</div>
                             <button id="opp-btn-boss" class="btn btn-outline-danger fw-bold opponent-btn" onclick="selectOpponent('boss')">夜市大總管</button>
                         </div>
-                        <div class="bg-white bg-opacity-50 p-2 rounded-4 shadow-sm border border-primary">
-                            <div class="fw-bold text-primary mb-2">✨ 地方特色名店</div>
+                        <div class="bg-white bg-opacity-50 p-2 rounded-4 shadow-sm border border-primary text-center">
+                            <div class="fw-bold text-primary mb-2">✨ 地方特色小吃</div>
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
                                 <button id="opp-btn-sp1" class="btn btn-outline-primary fw-bold opponent-btn" onclick="selectOpponent('sp1')">老字號蚵仔煎</button>
                                 <button id="opp-btn-sp2" class="btn btn-outline-primary fw-bold opponent-btn" onclick="selectOpponent('sp2')">排隊碳烤香腸</button>
                             </div>
                         </div>
-                        <div class="bg-white bg-opacity-50 p-2 rounded-4 shadow-sm border border-secondary">
+                        <div class="bg-white bg-opacity-50 p-2 rounded-4 shadow-sm border border-secondary text-center">
                             <div class="fw-bold text-secondary mb-2">🏪 一般競爭攤位</div>
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
                                 <button id="opp-btn-n1" class="btn btn-outline-secondary fw-bold opponent-btn" onclick="selectOpponent('n1')">平價滷肉飯</button>
@@ -260,33 +293,30 @@
                     </div>
                 </div>
 
+                <!-- 卡牌分頁 -->
                 <div id="tab-content-card" class="central-panel d-none d-flex flex-column">
                     <h3 class="fw-bold mb-1 text-center">卡牌裝備室</h3>
-                    <p class="text-center fw-bold text-primary-emphasis small">需剛好 10 張出戰 (裝備者自動前移)<br>當前：<span id="deck-count-display" class="text-danger">0</span> / 10</p>
-                    <div id="card-library-container">
-                        <div class="fw-bold text-success mb-2 small px-1">出戰牌組 (已裝備)</div>
-                        <div class="mini-card-grid mb-3" id="equipped-cards-grid"></div>
-                        <div class="card-library-divider"></div>
-                        <div class="mini-card-grid" id="library-cards-grid"></div>
-                    </div>
+                    <p class="text-center fw-bold text-primary-emphasis">請選擇 10 張卡牌出戰 (裝備者自動前移)<br>當前：<span id="deck-count-display" class="text-danger">0</span> / 10</p>
+                    <div class="mini-card-grid mt-2" id="card-library-grid"></div>
                 </div>
 
+                <!-- 底部動態資訊欄 -->
                 <div id="shop-info-bar" class="shop-info-bar shadow-sm d-flex flex-column justify-content-center p-3 px-md-4">
                     <div id="info-player-view" class="d-flex flex-wrap gap-4 fs-5 w-100">
                         <span class="w-100 fw-bold mb-1 fs-4">城市經營 / 商店情況</span>
                         <span id="shop-location-text">📍 營業地點：<span class="fw-bold text-warning">尚未選擇</span></span>
                         <span>🏷️ 小吃類型：<span id="player-food-type" class="fw-bold text-warning">---</span></span>
                         <span>💰 實際金額：<span id="current-money-display" class="fw-bold text-warning">$ 100</span></span>
-                        <span>💵 今日總結算收入：<span id="daily-earnings-display" class="fw-bold text-warning">+$ 0</span></span>
+                        <span>💵 今日預計收入：<span id="daily-earnings-display" class="fw-bold text-warning">+$ 0</span></span>
                     </div>
-                    <div id="info-opponent-view" class="d-none flex-column flex-md-row align-items-center justify-content-between w-100 gap-3">
+                    <div id="info-opponent-view" class="d-none d-flex flex-column flex-md-row align-items-center justify-content-between w-100 gap-3">
                         <div class="fs-5">
-                            <div class="fw-bold mb-2 fs-4">🎯 挑戰情報</div>
+                            <div class="fw-bold mb-2 fs-4">🎯 挑戰目標情報</div>
                             <div>名稱：<span id="opp-info-name" class="fw-bold text-warning">---</span></div>
                             <div>類型：<span id="opp-info-type" class="fw-bold text-warning">---</span></div>
                             <div class="small mt-1">強度評估：<span id="opp-info-desc" class="text-light">---</span></div>
                         </div>
-                        <button id="attack-btn" class="btn btn-light text-danger fw-bold btn-lg px-4 rounded-pill shadow" onclick="executeBattleCommand()">出擊 ⚔️<br><span class="fs-6 small">花費 $100 報名費</span></button>
+                        <button id="attack-btn" class="btn btn-light text-danger fw-bold btn-lg px-4 rounded-pill shadow" onclick="executeBattleCommand()">出擊 ⚔️<br><span class="fs-6">消耗 2 體力與 $100</span></button>
                     </div>
                 </div>
             </div>
@@ -296,8 +326,8 @@
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
                 </div>
-                <div class="city-selection-view flex-grow-1 shadow-sm p-3 mt-md-auto d-flex flex-column align-items-center text-center">
-                    <p class="text-secondary fw-bold small mb-3">當前城市</p>
+                <div class="city-selection-view flex-grow-1 shadow-sm p-3 mt-md-auto d-flex flex-column align-items-center">
+                    <p class="text-secondary fw-bold small mb-3">當前營業城市</p>
                     <div class="city-grid" id="main-city-grid">
                         <div class="city-btn" onclick="handleCityClick('嘉義市', '火雞肉飯一級戰區！')">嘉義市</div>
                         <div class="city-btn" onclick="handleCityClick('嘉義縣', '海產與山產豐富！')">嘉義縣</div>
@@ -329,8 +359,8 @@
                 <div class="shield-display fw-bold text-bright-yellow mb-2">🛡️ <span id="enemy-shield">0</span></div>
                 <div id="enemy-hero" class="hero-avatar hero-enemy mb-4"><span id="enemy-hero-name" class="fw-bold text-bright-yellow mb-1 text-center">對手</span><div class="fs-3 fw-bold">👥 <span id="enemy-hp">50</span>%</div><div class="stats-badge stats-enemy">💰 <span id="enemy-mana">0</span>/<span id="enemy-max-mana">0</span></div></div>
             </div>
-            <div class="col-12 col-md-4 order-3 order-md-2 d-flex flex-column align-items-center justify-content-center position-relative z-2">
-                <div id="drop-zone" class="drop-zone shadow-lg"><div class="text-secondary fs-4 fw-bold mb-2">🍽️ 營業區域</div><div class="text-secondary small text-center px-3">點擊手牌出牌</div></div>
+            <div class="col-12 col-md-4 order-3 order-md-2 d-flex flex-column align-items-center position-relative z-2">
+                <div id="drop-zone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event)" class="drop-zone shadow-lg"><div class="text-secondary fs-4 fw-bold mb-2">🍽️ 營業區域</div><div class="text-secondary small text-center px-3">雙擊出戰</div></div>
             </div>
         </div>
         <div class="fixed-bottom w-100 z-3 d-flex flex-row align-items-end px-3 pb-3 gap-3" style="pointer-events: none;"><div id="player-hand" class="hand-container flex-grow-1"></div><div class="flex-shrink-0 mb-4 me-md-4" style="pointer-events: auto;"><button id="end-turn-btn" onclick="endTurn()" class="btn btn-warning btn-lg fw-bold border border-2 border-white shadow-lg rounded-pill px-4 py-3">結束回合</button></div></div>
@@ -338,19 +368,14 @@
 
     <script>
         // =========================================
-        // 數據定義
+        // 核心數據
         // =========================================
-        const sleep = ms => new Promise(r => setTimeout(r, ms));
-        const clone = obj => JSON.parse(JSON.stringify(obj));
-        function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
-
         let stallName = ""; let playerCity = null; let selectedOpponentId = null;
         let defeatedOpponents = []; let currentBattleWon = false;
         let playerStamina = 5; const maxStamina = 5; let currentDay = 1; let currentMoney = 100;
         let baseDailyEarnings = 0; let todayOperateEarnings = 0; let operateShopYield = 30;
         let initialPlayerManaForBattle = 0; let lastBattleReturnedMoney = 0;
-        let defeatedTodayCount = 0;
-
+        
         let upgrades = {
             eq: { name: '設備升級', level: 0, maxLevel: 5, baseCost: 100, baseReward: 10 },
             snack: { name: '小吃升級', level: 0, maxLevel: 5, baseCost: 100, baseReward: 10 },
@@ -358,13 +383,14 @@
         };
 
         const CITY_FOOD_MAP = { '嘉義市': '火雞肉飯', '嘉義縣': '新鮮海產', '台南市': '傳統甜味小吃', '高雄市': '綜合冰品', '屏東縣': '熱帶水果冰' };
+        
         const OPPONENTS_DB = {
-            'n1': { name: '平價滷肉飯', type: '一般競爭', strength: '普通', desc: '普通的攤位。', playerHp: 50, enemyHp: 50 },
-            'n2': { name: '阿明烤玉米', type: '一般競爭', strength: '普通', desc: '普通的攤位。', playerHp: 50, enemyHp: 50 },
-            'n3': { name: '古早味紅茶', type: '一般競爭', strength: '普通', desc: '普通的攤位。', playerHp: 50, enemyHp: 50 },
-            'sp1': { name: '老字號蚵仔煎', type: '地方特色', strength: '較強', desc: '在地名店。', playerHp: 40, enemyHp: 60 },
-            'sp2': { name: '排隊香腸', type: '地方特色', strength: '較強', desc: '人氣美食。', playerHp: 40, enemyHp: 60 },
-            'boss': { name: '夜市大總管', type: '區域霸主', strength: '極高', desc: '稱霸夜市的王者！', playerHp: 20, enemyHp: 80 }
+            'n1': { name: '平價滷肉飯', type: '一般競爭', strength: '普通', desc: '普通的競爭攤位。', playerHp: 50, enemyHp: 50 },
+            'n2': { name: '阿明烤玉米', type: '一般競爭', strength: '普通', desc: '普通的競爭攤位。', playerHp: 50, enemyHp: 50 },
+            'n3': { name: '古早味紅茶', type: '一般競爭', strength: '普通', desc: '普通的競爭攤位。', playerHp: 50, enemyHp: 50 },
+            'sp1': { name: '老字號蚵仔煎', type: '地方特色', strength: '較強', desc: '在地名店，特色加持。', playerHp: 40, enemyHp: 60 },
+            'sp2': { name: '排隊碳烤香腸', type: '地方特色', strength: '較強', desc: '人氣排隊美食，特色加持。', playerHp: 40, enemyHp: 60 },
+            'boss': { name: '夜市大總管', type: '區域霸主', strength: '極高', desc: '夜市霸權，小吃王中王！', playerHp: 20, enemyHp: 80 }
         };
 
         const PLAYER_CARD_DB = [
@@ -382,7 +408,7 @@
             { id: 12, type: 'food', name: "烤魷魚", cost: 2, val: 6, img: "🦑", desc: "回補 3 點並增加 6% 客流。" },
             { id: 13, type: 'defense', name: "遮陽傘", cost: 1, val: 4, img: "⛱️", desc: "獲得 4 點防禦。" },
             { id: 14, type: 'attack', name: "檢舉噪音", cost: 2, val: 6, img: "📢", desc: "減少對手 6% 客流。" },
-            { id: 15, type: 'food', name: "肉粽", cost: 3, val: 10, img: "🍙", desc: "回補 4 點並增加 10% 客流。" }
+            { id: 15, type: 'food', name: "大腸包小腸", cost: 3, val: 10, img: "🌭", desc: "回補 4 點並增加 10% 客流。" }
         ];
 
         let playerOwnedCards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
@@ -406,13 +432,17 @@
             'sp1': [101, 103, 107, 201], 'sp2': [102, 105, 108, 202], 'boss': [101, 102, 105, 106, 108, 201, 202]
         };
 
-        // =========================================
-        // 核心功能實作
-        // =========================================
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const clone = obj => JSON.parse(JSON.stringify(obj));
+        function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
+
         function showCustomAlert(msg) {
             const modalEl = document.getElementById('customAlertModal');
             document.getElementById('customAlertMessage').innerHTML = msg;
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            if (typeof bootstrap !== 'undefined') {
+                const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                bsModal.show();
+            }
         }
 
         function showCampaignGameOver(msg) {
@@ -422,109 +452,134 @@
             document.getElementById('campaign-over-screen').classList.remove('d-none');
         }
 
-        function updateMainMenuUI() {
-            let totalProj = baseDailyEarnings + todayOperateEarnings;
-            document.getElementById('current-money-display').innerText = `$ ${currentMoney}`;
-            document.getElementById('daily-earnings-display').innerText = `+$ ${totalProj}`;
-            document.getElementById('side-stamina-display').innerText = `${playerStamina} / ${maxStamina}`;
-            document.getElementById('current-day-display').innerText = currentDay;
-            document.getElementById('operate-shop-btn-text').innerText = `商店經營 (賺取 $${operateShopYield})`;
-            for (let key in upgrades) {
-                let u = upgrades[key];
-                const badge = document.getElementById(key + '-lvl-badge');
-                if (badge) badge.innerText = `Lv.${u.level}`;
-                let cost = Math.floor(u.baseCost * Math.pow(2, u.level));
-                let rew = Math.floor(u.baseReward * Math.pow(1.5, u.level));
-                const btn = document.getElementById(key + '-btn');
-                if (btn) {
-                    btn.innerText = u.level < u.maxLevel ? `花費 $${cost}` : `已達上限`;
-                    btn.disabled = u.level >= u.maxLevel || currentMoney < cost;
+        // =========================================
+        // 主要邏輯
+        // =========================================
+        function updateOpponentUI() {
+            const normalDefeatedCount = defeatedOpponents.filter(id => id.startsWith('n')).length;
+            const specialDefeatedCount = defeatedOpponents.filter(id => id.startsWith('sp')).length;
+            const spUnlocked = normalDefeatedCount >= 3;
+            const bossUnlocked = specialDefeatedCount >= 2;
+
+            for (let id in OPPONENTS_DB) {
+                const btn = document.getElementById('opp-btn-' + id);
+                if (!btn) continue;
+                let isLocked = (id.startsWith('sp') && !spUnlocked) || (id.startsWith('boss') && !bossUnlocked);
+
+                if (isLocked) {
+                    btn.classList.add('locked-opponent-btn');
+                    btn.classList.remove('btn-outline-primary', 'btn-outline-danger', 'active');
+                    btn.innerHTML = "🔒 " + OPPONENTS_DB[id].name;
+                } else {
+                    btn.classList.remove('locked-opponent-btn');
+                    if (defeatedOpponents.includes(id)) {
+                        btn.innerHTML = OPPONENTS_DB[id].name + " ✅";
+                        btn.classList.remove('btn-outline-secondary', 'btn-outline-primary', 'btn-outline-danger');
+                        btn.classList.add('btn-success', 'text-white');
+                    } else {
+                        btn.innerHTML = OPPONENTS_DB[id].name;
+                        if(id.startsWith('sp')) { btn.classList.add('btn-outline-primary'); btn.classList.remove('btn-outline-secondary'); }
+                        else if(id.startsWith('boss')) { btn.classList.add('btn-outline-danger'); btn.classList.remove('btn-outline-secondary'); }
+                        else btn.classList.add('btn-outline-secondary');
+                    }
                 }
             }
         }
 
-        function handleRest() {
-            let totalIncome = baseDailyEarnings + todayOperateEarnings;
-            showCustomAlert(`<div class="text-start"><h4 class="text-center text-primary mb-3">🌙 本日營業結算</h4><p>天數：第 ${currentDay} 天</p><hr><p>收益：<span class="text-success fw-bold">+$${totalIncome}</span></p><p>擊敗對手：<span class="text-danger fw-bold">${defeatedTodayCount} 位</span></p><hr><p class="small text-secondary text-center">體力已恢復！</p></div>`);
-            currentMoney += totalIncome; currentDay++; playerStamina = maxStamina; todayOperateEarnings = 0; defeatedTodayCount = 0; updateMainMenuUI();
-            if (currentDay >= 50 && !defeatedOpponents.includes('boss')) return showCampaignGameOver("⏳ 期限已到，未能稱霸夜市...\n結局：「碌碌無為」。");
-        }
-
-        function operateShop() {
-            if (playerStamina < 2) return showCustomAlert("⚡ 體力不足！");
-            playerStamina -= 2; todayOperateEarnings += operateShopYield; updateMainMenuUI();
-            document.getElementById('menu-sys-message').innerHTML = `👨‍🍳 努力經營中！預計收入 +$${todayOperateEarnings}`;
-        }
-
         function switchTab(tabName) {
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active-tab'));
-            document.getElementById('tab-btn-' + tabName).classList.add('active-tab');
-            document.getElementById('tab-content-manage').classList.add('d-none');
+            const tabBtn = document.getElementById('tab-btn-' + tabName);
+            if (tabBtn) tabBtn.classList.add('active-tab');
+
             document.getElementById('tab-content-battle').classList.add('d-none');
+            document.getElementById('tab-content-manage').classList.add('d-none');
             document.getElementById('tab-content-card').classList.add('d-none');
-            document.getElementById('tab-content-' + tabName).classList.remove('d-none');
+            const tabContent = document.getElementById('tab-content-' + tabName);
+            if (tabContent) tabContent.classList.remove('d-none');
+
             selectPlayerShop();
             if(tabName === 'card') renderCardManagement();
         }
 
         function renderCardManagement() {
-            const eqGrid = document.getElementById('equipped-cards-grid');
-            const libGrid = document.getElementById('library-cards-grid');
-            eqGrid.innerHTML = ''; libGrid.innerHTML = '';
+            const grid = document.getElementById('card-library-grid');
+            grid.innerHTML = '';
             document.getElementById('deck-count-display').innerText = playerDeck.length;
+            
             const typePriority = { 'food': 1, 'attack': 2, 'defense': 3 };
-            const ownedCards = playerOwnedCards.map(id => PLAYER_CARD_DB.find(c => c.id === id) || MASTER_ENEMY_CARDS[id]).filter(c => c);
+            const cardsToRender = playerOwnedCards.map(id => {
+                return PLAYER_CARD_DB.find(c => c.id === id) || MASTER_ENEMY_CARDS[id];
+            }).filter(c => c);
 
-            const buildHTML = (card, isEquipped) => {
+            cardsToRender.sort((a, b) => {
+                const aEq = playerDeck.includes(a.id) ? 0 : 1;
+                const bEq = playerDeck.includes(b.id) ? 0 : 1;
+                if (aEq !== bEq) return aEq - bEq;
+                return typePriority[a.type] - typePriority[b.type];
+            });
+
+            cardsToRender.forEach(card => {
+                let isEquipped = playerDeck.includes(card.id);
                 let badgeClass = card.type === 'food' ? 'val-food' : (card.type === 'attack' ? 'val-attack' : 'val-defense');
                 let badgeText = card.type === 'food' ? `👥+${card.val}%` : (card.type === 'attack' ? `⚔️-${card.val}%` : `🛡️+${card.val}`);
-                return `
+                
+                grid.innerHTML += `
                     <div class="mini-card ${isEquipped ? 'equipped' : ''}">
-                        <div class="card-cost" style="width:25px; height:25px; font-size:0.7rem; top:-8px; left:-8px;">${card.cost}</div>
-                        <div class="card-val ${badgeClass}" style="bottom:-10px; font-size:0.6rem;">${badgeText}</div>
+                        <div class="badge bg-dark mb-1" style="font-size:0.6rem;">${card.cost}費</div>
+                        <div class="badge ${badgeClass} mb-1" style="font-size:0.6rem;">${badgeText}</div>
                         <div class="fs-2">${card.img}</div>
                         <div class="fw-bold small mb-2 text-truncate w-100">${card.name}</div>
                         <button class="btn btn-sm ${isEquipped ? 'btn-success' : 'btn-outline-primary'} fw-bold rounded-pill w-100" onclick="toggleCard(${card.id})">
                             ${isEquipped ? 'ON' : 'OFF'}
                         </button>
                     </div>`;
-            };
-
-            ownedCards.filter(c => playerDeck.includes(c.id)).sort((a,b) => typePriority[a.type] - typePriority[b.type]).forEach(c => eqGrid.innerHTML += buildHTML(c, true));
-            ownedCards.filter(c => !playerDeck.includes(c.id)).sort((a,b) => typePriority[a.type] - typePriority[b.type]).forEach(c => libGrid.innerHTML += buildHTML(c, false));
+            });
         }
 
         function toggleCard(id) {
-            const idx = playerDeck.indexOf(id); if (idx > -1) playerDeck.splice(idx, 1);
-            else { if (playerDeck.length >= 10) return showCustomAlert("裝備已達 10 張上限！"); playerDeck.push(id); }
+            const idx = playerDeck.indexOf(id);
+            if (idx > -1) {
+                playerDeck.splice(idx, 1);
+            } else {
+                if (playerDeck.length >= 10) return showCustomAlert("裝備數量已達 10 張上限！");
+                playerDeck.push(id);
+            }
             renderCardManagement();
         }
 
-        function updateOpponentUI() {
-            const normalCount = defeatedOpponents.filter(id => id.startsWith('n')).length;
-            const specialCount = defeatedOpponents.filter(id => id.startsWith('sp')).length;
-            const spUnlocked = normalCount >= 3; const bossUnlocked = specialCount >= 2;
+        function buyUpgrade(key) {
+            let u = upgrades[key]; if (u.level >= u.maxLevel) return;
+            let cost = Math.floor(u.baseCost * Math.pow(2, u.level));
+            let reward = Math.floor(u.baseReward * Math.pow(1.5, u.level));
+            if (currentMoney < cost) return showCustomAlert(`❌ 資金不足！升級需要 $${cost}。`);
+            currentMoney -= cost; u.level++; baseDailyEarnings += reward; updateMainMenuUI();
+            showCustomAlert(`✅ 成功升級至 Lv.${u.level}！`);
+        }
 
-            for (let id in OPPONENTS_DB) {
-                const btn = document.getElementById('opp-btn-' + id); if (!btn) continue;
-                let isLocked = (id.startsWith('sp') && !spUnlocked) || (id.startsWith('boss') && !bossUnlocked);
-                if (isLocked) { btn.classList.add('locked-opponent-btn'); btn.innerHTML = "🔒 " + OPPONENTS_DB[id].name; }
-                else {
-                    btn.classList.remove('locked-opponent-btn');
-                    if (defeatedOpponents.includes(id)) { btn.innerHTML = OPPONENTS_DB[id].name + " ✅"; btn.classList.add('btn-success', 'text-white'); }
-                    else btn.innerHTML = OPPONENTS_DB[id].name;
-                }
-            }
+        function operateShop() {
+            if (playerStamina < 2) return showCustomAlert("⚡ 體力不足！需要 2 點體力。");
+            playerStamina -= 2; todayOperateEarnings += operateShopYield; updateMainMenuUI();
+            const msgBox = document.getElementById('menu-sys-message');
+            msgBox.innerHTML = `👨‍🍳 積極營業中！今日預計結算時增加 $${operateShopYield}。`;
+        }
+
+        function selectPlayerShop() {
+            selectedOpponentId = null; document.querySelectorAll('.opponent-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('shop-info-bar').classList.remove('attack-mode');
+            document.getElementById('info-opponent-view').classList.add('d-none');
+            document.getElementById('info-player-view').classList.remove('d-none');
         }
 
         function selectOpponent(id) {
             if (defeatedOpponents.includes(id)) return showCustomAlert("✅ 已擊敗！");
-            const normalCount = defeatedOpponents.filter(o => o.startsWith('n')).length;
-            const specialCount = defeatedOpponents.filter(o => o.startsWith('sp')).length;
-            if (id.startsWith('sp') && normalCount < 3) return showCustomAlert("🔒 尚未解鎖！擊敗所有「一般競爭攤位」。");
-            if (id.startsWith('boss') && specialCount < 2) return showCustomAlert("🔒 尚未解鎖！擊敗所有「地方特色小吃」。");
+            const normalDefeatedCount = defeatedOpponents.filter(o => o.startsWith('n')).length;
+            const specialDefeatedCount = defeatedOpponents.filter(o => o.startsWith('sp')).length;
+            if (id.startsWith('sp') && normalDefeatedCount < 3) return showCustomAlert("🔒 尚未解鎖！擊敗所有「一般競爭攤位」。");
+            if (id.startsWith('boss') && specialDefeatedCount < 2) return showCustomAlert("🔒 尚未解鎖！擊敗所有「地方特色小吃」。");
+            
             selectedOpponentId = id; document.querySelectorAll('.opponent-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('opp-btn-' + id).classList.add('active');
+            
             const opp = OPPONENTS_DB[id];
             document.getElementById('opp-info-name').innerText = opp.name;
             document.getElementById('opp-info-type').innerText = opp.type;
@@ -535,28 +590,46 @@
             document.getElementById('info-opponent-view').classList.add('d-flex');
         }
 
-        function selectPlayerShop() {
-            selectedOpponentId = null; document.querySelectorAll('.opponent-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('shop-info-bar').classList.remove('attack-mode');
-            document.getElementById('info-opponent-view').classList.add('d-none');
-            document.getElementById('info-player-view').classList.remove('d-none');
+        function updateMainMenuUI() {
+            let totalProjected = baseDailyEarnings + todayOperateEarnings;
+            document.getElementById('current-money-display').innerText = `$ ${currentMoney}`;
+            document.getElementById('daily-earnings-display').innerText = `+$ ${totalProjected}`;
+            document.getElementById('side-stamina-display').innerText = `${playerStamina} / ${maxStamina}`;
+            document.getElementById('current-day-display').innerText = currentDay;
+            document.getElementById('operate-shop-btn-text').innerText = `商店經營 (賺取 $${operateShopYield})`;
+            
+            for (let key in upgrades) {
+                let u = upgrades[key];
+                const badge = document.getElementById(key + '-lvl-badge');
+                if (badge) badge.innerText = `Lv.${u.level}`;
+                let cost = Math.floor(u.baseCost * Math.pow(2, u.level));
+                let rew = Math.floor(u.baseReward * Math.pow(1.5, u.level));
+                const rewTxt = document.getElementById(key + '-reward-text');
+                if (rewTxt) rewTxt.innerText = u.level < u.maxLevel ? `+ $${rew} / 日` : `MAX`;
+                const btn = document.getElementById(key + '-btn');
+                if (btn) {
+                    btn.innerText = u.level < u.maxLevel ? `花費 $${cost}` : `已達上限`;
+                    btn.disabled = u.level >= u.maxLevel || currentMoney < cost;
+                }
+            }
         }
 
-        function buyUpgrade(key) {
-            let u = upgrades[key]; if (u.level >= u.maxLevel) return;
-            let cost = Math.floor(u.baseCost * Math.pow(2, u.level));
-            let rew = Math.floor(u.baseReward * Math.pow(1.5, u.level));
-            if (currentMoney < cost) return showCustomAlert(`❌ 資金不足！升級需要 $${cost}。`);
-            currentMoney -= cost; u.level++; baseDailyEarnings += rew; updateMainMenuUI();
-            showCustomAlert(`✅ 成功升級至 Lv.${u.level}！`);
+        function handleRest() {
+            currentMoney += (baseDailyEarnings + todayOperateEarnings);
+            currentDay++; playerStamina = maxStamina; todayOperateEarnings = 0; updateMainMenuUI();
+            if (currentDay >= 50 && !defeatedOpponents.includes('boss')) return showCampaignGameOver("⏳ 50天期限已到...\n您未能戰勝區域霸主，生意漸漸平淡。\n結局：「碌碌無為」。");
+            document.getElementById('menu-sys-message').innerHTML = `🌙 休息完畢，迎來第 ${currentDay} 天。`;
         }
 
         function executeBattleCommand() {
             if (playerDeck.length !== 10) return showCustomAlert("⚠️ 必須裝備剛好 10 張卡牌才能對戰！");
             if (currentMoney <= 100) return showCustomAlert("❌ 實際金額需大於 $100 才能挑戰對手！");
             if (playerStamina < 2) return showCustomAlert("⚡ 體力不足！");
+            
             currentMoney -= 100; playerStamina -= 2;
-            initialPlayerManaForBattle = Math.floor(currentMoney / 10); currentMoney %= 10;
+            initialPlayerManaForBattle = Math.floor(currentMoney / 10);
+            currentMoney %= 10;
+            
             updateMainMenuUI();
             document.getElementById('main-menu-view').classList.add('d-none');
             document.getElementById('battle-view').classList.remove('d-none');
@@ -565,15 +638,9 @@
         }
 
         // =========================================
-        // 戰鬥邏輯與動畫
+        // 戰鬥邏輯與特效
         // =========================================
         let state = { round: 1, turn: 'player', player: { hp: 50, shield: 0, mana: 0, hand: [], deck: [], discard: [] }, enemy: { hp: 50, shield: 0, mana: 0, hand: [], deck: [], discard: [] }, isProcessing: false };
-
-        function drawCard(target) {
-            let s = state[target];
-            if (s.deck.length === 0) { if (s.discard.length === 0) return; s.deck = shuffle(s.discard); s.discard = []; }
-            if (s.deck.length > 0) s.hand.push(s.deck.pop());
-        }
 
         function initGame() {
             document.getElementById('game-over-screen').classList.add('d-none');
@@ -586,8 +653,6 @@
                 enemy: { hp: opp.enemyHp, shield: 0, mana: 1, maxMana: 1, hand: [], deck: generateEnemyDeck(selectedOpponentId), discard: [] },
                 isProcessing: false
             };
-            document.getElementById('player-hand').innerHTML = '';
-            // 起始抽5張
             for(let i=0; i<5; i++) { drawCard('player'); drawCard('enemy'); }
             updateUI();
         }
@@ -600,135 +665,105 @@
             let d = []; for(let i=0; i<20; i++) { let c = clone(pool[Math.floor(Math.random()*pool.length)]); c.uid = Math.random(); d.push(c); } return d;
         }
 
+        function drawCard(target) {
+            let s = state[target];
+            if (s.deck.length === 0) { if (s.discard.length === 0) return; s.deck = shuffle(s.discard); s.discard = []; }
+            if (s.deck.length > 0) s.hand.push(s.deck.pop());
+        }
+
         function updateUI() {
             document.getElementById('player-mana').innerText = state.player.mana;
             document.getElementById('enemy-mana').innerText = state.enemy.mana;
+            document.getElementById('enemy-max-mana').innerText = state.enemy.maxMana;
             document.getElementById('round-display').innerText = state.round;
             document.getElementById('player-hp').innerText = Math.round(state.player.hp);
-            document.getElementById('enemy-hp').innerText = Math.round(state.enemy.hp);
             document.getElementById('player-shield').innerText = state.player.shield;
+            document.getElementById('enemy-hp').innerText = Math.round(state.enemy.hp);
             document.getElementById('enemy-shield').innerText = state.enemy.shield;
             document.getElementById('player-deck-count').innerText = state.player.deck.length;
+            document.getElementById('player-discard-count').innerText = state.player.discard.length;
+            document.getElementById('enemy-deck-count').innerText = state.enemy.deck.length;
+            document.getElementById('enemy-discard-count').innerText = state.enemy.discard.length;
 
-            const hand = document.getElementById('player-hand');
+            const hand = document.getElementById('player-hand'); hand.innerHTML = '';
             state.player.hand.forEach((card, idx) => {
-                const canPlay = card.cost <= state.player.mana && state.turn === 'player' && !state.isProcessing;
-                const bg = card.type === 'food' ? 'bg-food' : (card.type === 'attack' ? 'bg-attack' : 'bg-defense');
-                const badge = card.type === 'food' ? 'val-food' : (card.type === 'attack' ? 'val-attack' : 'val-defense');
-                const val = card.type === 'food' ? `👥+${card.val}%` : (card.type === 'attack' ? `⚔️-${card.val}%` : `🛡️+${card.val}`);
-                
-                let cardEl = hand.querySelector(`[data-idx="${idx}"]`);
-                if (!cardEl) {
-                    const div = document.createElement('div');
-                    div.className = `game-card ${bg} ${canPlay ? 'card-playable': 'card-disabled'} card-anim-draw`;
-                    div.setAttribute('data-idx', idx);
-                    div.onclick = () => { if(canPlay) executePlayCard(idx, 'player'); };
-                    div.innerHTML = `<div class="card-cost">${card.cost}</div><div class="card-val ${badge}">${val}</div><div class="card-title text-center fw-bold bg-light py-1 small px-1 text-truncate">${card.name}</div><div class="card-emoji flex-grow-1 d-flex align-items-center justify-content-center display-4">${card.img}</div><div class="card-desc text-center px-1 py-1 text-secondary bg-white rounded-bottom small" style="height:50px; font-size:0.7rem; line-height:1.2;">${card.desc}</div>`;
-                    hand.appendChild(div);
-                }
+                let canPlay = card.cost <= state.player.mana && state.turn === 'player' && !state.isProcessing;
+                let bg = card.type === 'food' ? 'bg-food' : (card.type === 'attack' ? 'bg-attack' : 'bg-defense');
+                let badge = card.type === 'food' ? 'val-food' : (card.type === 'attack' ? 'val-attack' : 'val-defense');
+                let val = card.type === 'food' ? `👥+${card.val}%` : (card.type === 'attack' ? `⚔️-${card.val}%` : `🛡️+${card.val}`);
+                hand.innerHTML += `<div class="game-card ${bg} ${canPlay ? 'card-playable': 'card-disabled'}" ondblclick="executePlayCard(${idx}, 'player')">
+                    <div class="card-cost">${card.cost}</div><div class="card-val ${badge}">${val}</div>
+                    <div class="card-title text-center fw-bold bg-light py-1 small rounded-top text-truncate px-1">${card.name}</div>
+                    <div class="card-emoji flex-grow-1 d-flex align-items-center justify-content-center display-4">${card.img}</div>
+                    <div class="card-desc text-center px-1 py-1 text-secondary bg-white rounded-bottom small" style="height: 50px; font-size:0.75rem;">${card.desc}</div>
+                </div>`;
             });
-            if (hand.children.length > state.player.hand.length) { hand.innerHTML = ''; updateUI(); }
             document.getElementById('end-turn-btn').disabled = state.turn !== 'player' || state.isProcessing;
         }
 
         async function executePlayCard(idx, role) {
-            const p = state[role]; const targetRole = role === 'player' ? 'enemy' : 'player'; const t = state[targetRole];
-            const card = p.hand[idx]; if (!card || card.cost > p.mana) return;
+            const p = state[role]; const target = role === 'player' ? 'enemy' : 'player'; const t = state[target];
+            const card = p.hand[idx]; if (card.cost > p.mana) return;
 
-            state.isProcessing = true;
-            
-            if (role === 'player') {
-                const handEl = document.getElementById('player-hand');
-                const cardEl = handEl.querySelector(`[data-idx="${idx}"]`);
-                if (cardEl) {
-                    const rect = cardEl.getBoundingClientRect();
-                    const targetRect = document.getElementById('drop-zone').getBoundingClientRect();
-                    const dummy = cardEl.cloneNode(true);
-                    dummy.classList.remove('card-playable', 'card-anim-draw');
-                    dummy.classList.add('card-playing-transit');
-                    dummy.style.left = rect.left + 'px'; dummy.style.top = rect.top + 'px';
-                    document.body.appendChild(dummy);
-                    cardEl.style.visibility = 'hidden';
-                    dummy.offsetHeight; // Reflow
-                    dummy.style.transform = 'scale(1.2) rotate(10deg)';
-                    dummy.style.left = (targetRect.left + (targetRect.width/2) - 67) + 'px';
-                    dummy.style.top = (targetRect.top + (targetRect.height/2) - 97) + 'px';
-                    await sleep(500); dummy.remove();
-                }
-            }
-
-            p.mana -= card.cost; 
-            p.discard.push(p.hand.splice(idx, 1)[0]); 
-            updateUI();
+            state.isProcessing = true; p.mana -= card.cost; p.discard.push(p.hand.splice(idx, 1)[0]); updateUI();
             await showVanishAnimation(card);
 
+            const myHero = document.getElementById(role + '-hero');
+            const targetHero = document.getElementById(target + '-hero');
+
             if (card.type === 'food') {
-                p.hp = Math.min(100, p.hp + card.val); showDamageNumber(role, `+${card.val}%`, '#4ade80');
+                p.hp = Math.min(100, p.hp + card.val);
+                showDamageNumber(role, `+${card.val}%`, '#4ade80');
                 if (role === 'player') { p.mana += (card.cost + 1); showDamageNumber(role, `💰+${card.cost+1}`, '#38bdf8'); }
-                document.getElementById(role + '-hero').style.transform = 'scale(1.15)'; await sleep(400); document.getElementById(role + '-hero').style.transform = 'scale(1)';
+                myHero.style.transform = 'scale(1.15)'; await sleep(400); myHero.style.transform = 'scale(1)';
             } else if (card.type === 'attack') {
                 let dmg = card.val; 
-                if (t.shield > 0) { if (t.shield >= dmg) { t.shield -= dmg; showDamageNumber(targetRole, '🛡️抵消', '#60a5fa'); dmg = 0; } else { dmg -= t.shield; t.shield = 0; showDamageNumber(targetRole, '🛡️破防', '#fbbf24'); } }
-                if (dmg > 0) { t.hp = Math.max(0, t.hp - dmg); showDamageNumber(targetRole, `-${dmg}%`, '#f87171'); }
-                document.getElementById(targetRole + '-hero').classList.add('damage-shake'); await sleep(400); document.getElementById(targetRole + '-hero').classList.remove('damage-shake');
-            } else if (card.type === 'defense') { p.shield += card.val; showDamageNumber(role, `🛡️+${card.val}`, '#3b82f6'); }
+                if (t.shield > 0) {
+                    if (t.shield >= dmg) { t.shield -= dmg; showDamageNumber(target, '🛡️抵消', '#60a5fa'); dmg = 0; }
+                    else { dmg -= t.shield; t.shield = 0; showDamageNumber(target, '🛡️破防', '#fbbf24'); }
+                }
+                if (dmg > 0) { t.hp = Math.max(0, t.hp - dmg); showDamageNumber(target, `-${dmg}%`, '#f87171'); }
+                targetHero.classList.add('damage-shake'); await sleep(400); targetHero.classList.remove('damage-shake');
+            } else if (card.type === 'defense') {
+                p.shield += card.val; showDamageNumber(role, `🛡️+${card.val}`, '#3b82f6');
+                myHero.style.transform = 'scale(1.15)'; await sleep(400); myHero.style.transform = 'scale(1)';
+            }
 
             if (p.hp >= 100 || t.hp <= 0) endGame(role === 'player' ? "🎉 勝利！" : "😢 失敗！", role === 'player');
-            else { 
-                state.isProcessing = false; // 解除鎖定，允許連續出牌
-                updateUI(); 
-            }
+            else { state.isProcessing = false; updateUI(); }
         }
 
-        function showVanishAnimation(card) {
-            return new Promise(r => {
-                const anim = document.createElement('div');
-                anim.className = "position-absolute bg-light border border-4 border-secondary rounded-3 d-flex flex-column align-items-center justify-content-center anim-vanish";
-                anim.style.width = "120px"; anim.style.height = "160px"; anim.style.zIndex = "100";
-                anim.innerHTML = `<div class="display-4">${card.img}</div><div class="fw-bold mt-2">${card.name}</div>`;
-                document.getElementById('drop-zone').appendChild(anim);
-                setTimeout(() => { anim.remove(); r(); }, 600);
-            });
+        async function showVanishAnimation(card) {
+            const dropZone = document.getElementById('drop-zone');
+            const anim = document.createElement('div');
+            anim.className = "position-absolute bg-light border border-4 border-secondary rounded-3 d-flex flex-column align-items-center justify-content-center anim-vanish";
+            anim.style.width = "120px"; anim.style.height = "160px"; anim.style.zIndex = "100";
+            anim.innerHTML = `<div class="display-4">${card.img}</div><div class="fw-bold mt-2">${card.name}</div>`;
+            dropZone.appendChild(anim);
+            await sleep(600); anim.remove();
         }
 
         function showDamageNumber(role, text, color) {
             const h = document.getElementById(role + '-hero'); if(!h) return;
-            const d = document.createElement('div'); d.className = "anim-damage"; d.style.color = color; d.innerText = text;
-            h.appendChild(d); setTimeout(() => d.remove(), 1000);
+            const d = document.createElement('div');
+            d.className = "anim-damage"; d.style.color = color; d.innerText = text; h.appendChild(d); setTimeout(() => d.remove(), 1000);
         }
 
         function endGame(msg, isWin) { state.isProcessing = true; currentBattleWon = isWin; document.getElementById('game-over-text').innerText = msg; document.getElementById('game-over-screen').classList.remove('d-none'); }
         async function endTurn() { state.turn = 'enemy'; updateUI(); await startEnemyTurn(); }
         async function startEnemyTurn() {
-            const el = document.getElementById('system-message'); el.innerText = "對手營業中...";
-            state.enemy.mana = ++state.enemy.maxMana; while(state.enemy.hand.length < 5) drawCard('enemy');
+            const el = document.getElementById('system-message');
+            el.innerText = "對手營業中..."; el.style.transform = "scale(1.1)";
+            state.enemy.mana = ++state.enemy.maxMana;
+            while(state.enemy.hand.length < 5) drawCard('enemy');
             await sleep(1000);
             let play = true; while(play) {
                 play = false; let hand = state.enemy.hand;
-                for(let i=0; i<hand.length; i++) { if(hand[i].cost <= state.enemy.mana) { await executePlayCard(i, 'enemy'); play = true; await sleep(600); break; } }
+                for(let i=0; i<hand.length; i++) { if(hand[i].cost <= state.enemy.mana) { await executePlayCard(i, 'enemy'); play = true; await sleep(500); break; } }
             }
-            if(!currentBattleWon) { el.innerText = "你的回合！"; startPlayerTurn(); }
+            if(!currentBattleWon) { el.innerText = "你的回合！"; el.style.transform = "scale(1)"; startPlayerTurn(); }
         }
-
-        // 修改：每回合回收 10 張卡並刷新 5 張
-        function startPlayerTurn() { 
-            state.round++; 
-            if(state.round > 10) return evaluateRoundLimitWin(); 
-            state.turn = 'player'; 
-            
-            // 回收：手牌 + 棄牌堆 全面放回 牌組
-            state.player.deck = state.player.deck.concat(state.player.hand, state.player.discard);
-            state.player.hand = [];
-            state.player.discard = [];
-            shuffle(state.player.deck);
-            
-            // 重新抽 5 張
-            for(let i=0; i<5; i++) drawCard('player');
-            
-            state.isProcessing = false; 
-            updateUI(); 
-        }
-
+        function startPlayerTurn() { state.round++; if(state.round > 10) return evaluateRoundLimitWin(); state.turn = 'player'; while(state.player.hand.length < 5) drawCard('player'); updateUI(); }
         function evaluateRoundLimitWin() { endGame(state.player.hp >= state.enemy.hp ? "🎉 結算獲勝！" : "😢 結算失敗！", state.player.hp >= state.enemy.hp); }
 
         function returnToMainMenu() {
@@ -737,43 +772,39 @@
             if (!currentBattleWon) {
                 const opp = OPPONENTS_DB[selectedOpponentId];
                 if (opp.type === '一般競爭') return showCampaignGameOver("攤位經營不善...\n結局：「慘淡收場」。");
-                else if (opp.type === '地方特色') { defeatedOpponents = defeatedOpponents.filter(id => !id.startsWith('n')); showCustomAlert("失敗！倒回一般階段。"); }
-                else if (opp.type === '區域霸主') { defeatedOpponents = defeatedOpponents.filter(id => !id.startsWith('sp')); showCustomAlert("失敗！倒回特色階段。"); }
+                else if (opp.type === '地方特色') { defeatedOpponents = defeatedOpponents.filter(id => !id.startsWith('n')); showCustomAlert("挑戰失敗！名聲受損，需重頭挑戰一般攤位。"); }
+                else if (opp.type === '區域霸主') { defeatedOpponents = defeatedOpponents.filter(id => !id.startsWith('sp')); showCustomAlert("挑戰失敗！霸主威壓，需重頭挑戰特色名店。"); }
                 processReturn();
-            } else if (!defeatedOpponents.includes(selectedOpponentId)) { 
-                showLootScreen(); 
-            } else {
-                processReturn();
-            }
+            } else if (!defeatedOpponents.includes(selectedOpponentId)) { showLootScreen(); } 
+            else { processReturn(); }
         }
 
         function processReturn() {
             if (currentBattleWon && !defeatedOpponents.includes(selectedOpponentId)) {
-                defeatedOpponents.push(selectedOpponentId); defeatedTodayCount++;
+                defeatedOpponents.push(selectedOpponentId);
                 const opp = OPPONENTS_DB[selectedOpponentId];
                 if (opp.type === '一般競爭') operateShopYield += 100;
                 else if (opp.type === '地方特色') operateShopYield += 300;
-                else if (opp.type === '區域霸主') return showCampaignGameOver(`🏆 戰勝霸主！\n您成為了「小吃王中王」！`);
+                else if (opp.type === '區域霸主') return showCampaignGameOver(`🏆 恭喜您戰勝霸主！\n您成為了傳說中的「小吃王中王」！`);
             }
-            updateMainMenuUI(); updateOpponentUI(); switchTab('manage');
-            document.getElementById('battle-view').classList.add('d-none');
-            document.getElementById('main-menu-view').classList.remove('d-none');
-            document.getElementById('main-menu-view').classList.add('d-flex');
+            updateMainMenuUI(); updateOpponentUI(); switchTab('manage'); document.getElementById('battle-view').classList.add('d-none'); document.getElementById('main-menu-view').classList.remove('d-none');
         }
 
         function selectInitialCity(name, el) { playerCity = name; document.querySelectorAll('#start-city-grid .city-btn').forEach(b => b.classList.remove('selected-city-btn')); el.classList.add('selected-city-btn'); }
+        
         function confirmStartGame() {
-            stallName = document.getElementById('stall-name-input').value.trim(); if (!stallName || !playerCity) return showCustomAlert("請輸入名稱並選擇城市！");
+            stallName = document.getElementById('stall-name-input').value.trim();
+            if (!stallName || !playerCity) return showCustomAlert("請輸入名稱並選擇城市！");
             document.querySelectorAll('.player-stall-name-display').forEach(el => el.innerText = stallName);
             document.getElementById('player-food-type').innerText = CITY_FOOD_MAP[playerCity];
             document.getElementById('shop-location-text').innerHTML = `📍 營業地點：<span class="text-warning">${playerCity}</span>`;
             document.querySelectorAll('#main-city-grid .city-btn').forEach(btn => {
-                if (btn.innerText === playerCity) btn.classList.add('selected-city-btn'); else btn.classList.add('locked-city-btn');
+                if (btn.innerText === playerCity) btn.classList.add('selected-city-btn');
+                else btn.classList.add('locked-city-btn');
             });
             document.getElementById('start-screen-view').classList.add('d-none');
-            const mmv = document.getElementById('main-menu-view');
-            mmv.classList.remove('d-none'); mmv.classList.add('d-flex');
-            updateMainMenuUI(); updateOpponentUI(); switchTab('manage');
+            document.getElementById('main-menu-view').classList.remove('d-none'); document.getElementById('main-menu-view').classList.add('d-flex');
+            updateMainMenuUI(); updateOpponentUI(); switchTab('manage'); 
         }
 
         function handleCityClick(name, info) { if(name === playerCity) showCustomAlert(`【${name}情報】<br>${info}`); }
@@ -782,17 +813,22 @@
             const container = document.getElementById('loot-cards-container'); container.innerHTML = '';
             ENEMY_POOLS[selectedOpponentId].forEach(id => {
                 const c = MASTER_ENEMY_CARDS[id];
-                let bCls = c.type === 'food' ? 'val-food' : (c.type === 'attack' ? 'val-attack' : 'val-defense');
-                let bTxt = c.type === 'food' ? `👥+${c.val}%` : (c.type === 'attack' ? `⚔️-${c.val}%` : `🛡️+${c.val}`);
+                // 修正：這裡先前變數命名錯誤導致報錯，現已修正為 c.type 與 c.val
+                let badgeClass = c.type === 'food' ? 'val-food' : (c.type === 'attack' ? 'val-attack' : 'val-defense');
+                let badgeText = c.type === 'food' ? `👥+${c.val}%` : (c.type === 'attack' ? `⚔️-${c.val}%` : `🛡️+${c.val}`);
                 container.innerHTML += `<div id="loot-card-${id}" class="game-card bg-food" style="margin-left:0; cursor:pointer;" onclick="toggleLoot(${id})">
-                    <div class="card-cost">${c.cost}</div><div class="card-val ${bCls}">${bTxt}</div><div class="card-emoji flex-grow-1 d-flex align-items-center justify-content-center display-4">${c.img}</div><div class="text-center fw-bold small p-2 text-truncate">${c.name}</div>
+                    <div class="card-cost">${c.cost}</div><div class="card-val ${badgeClass}">${badgeText}</div><div class="card-emoji flex-grow-1 d-flex align-items-center justify-content-center display-4">${c.img}</div><div class="text-center fw-bold small p-2">${c.name}</div>
                 </div>`;
             });
             selectedLoot = []; document.getElementById('loot-screen-view').classList.remove('d-none');
         }
         function toggleLoot(id) {
-            const idx = selectedLoot.indexOf(id); if (idx > -1) selectedLoot.splice(idx, 1);
+            const idx = selectedLoot.indexOf(id);
+            if (idx > -1) selectedLoot.splice(idx, 1);
             else { if(selectedLoot.length >= 2) return; selectedLoot.push(id); }
+            updateLootUI();
+        }
+        function updateLootUI() {
             ENEMY_POOLS[selectedOpponentId].forEach(id => {
                 const el = document.getElementById(`loot-card-${id}`);
                 if(el){ el.style.borderColor = selectedLoot.includes(id) ? '#22c55e' : '#cbd5e1'; el.style.transform = selectedLoot.includes(id) ? 'translateY(-10px) scale(1.05)' : 'scale(1)'; }
