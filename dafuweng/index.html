@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>布袋文化桌遊抽卡機</title>
+  <!-- 載入 Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    .card-deck-btn {
+      min-height: 260px;
+      border-radius: 1.25rem;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+    }
+    .card-deck-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    /* 卡片彈出視窗動畫與背景 */
+    #modal-overlay {
+      background-color: rgba(0,0,0,0.65);
+      z-index: 1050;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #modal-overlay.show {
+      opacity: 1;
+    }
+    .modal-box {
+      max-width: 500px;
+      max-height: 90vh; /* 限制最大高度為螢幕的 90% */
+      display: flex; /* 改用 Flex 排版 */
+      flex-direction: column;
+      border-radius: 1.5rem;
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #modal-overlay.show .modal-box {
+      transform: scale(1);
+    }
+
+    /* 新增：手機轉向提示與動畫 */
+    @media screen and (max-width: 768px) and (orientation: portrait) {
+      #orientation-warning {
+        display: flex !important;
+      }
+      body {
+        overflow: hidden; /* 防止直向時仍可滑動背後內容 */
+      }
+    }
+    @keyframes rotatePhone {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-90deg); }
+      100% { transform: rotate(-90deg); }
+    }
+  </style>
+</head>
+<body class="bg-light min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
+
+  <!-- 新增：手機直向時的旋轉提示 -->
+  <div id="orientation-warning" style="display: none; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); z-index: 9999; text-align: center; padding: 2rem;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mb-4" style="animation: rotatePhone 2s infinite ease-in-out;">
+      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+      <line x1="12" y1="18" x2="12.01" y2="18"></line>
+    </svg>
+    <h2 class="fw-bold text-dark mb-3">請旋轉您的手機</h2>
+    <p class="text-secondary fs-5">本桌遊專為橫向螢幕設計，<br>請將手機打橫以獲得最佳遊玩體驗！</p>
+  </div>
+
+  <!-- 遊戲標題 -->
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold text-primary mb-2 shadow-sm" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1)">布袋時光桌遊</h1>
+    <p class="text-secondary fs-5">點擊下方牌堆抽取卡片</p>
+  </div>
+
+  <!-- 牌堆區域 -->
+  <div class="container">
+    <div class="row g-4 justify-content-center" style="max-width: 900px; margin: 0 auto;">
+      
+      <!-- 問題卡牌堆 -->
+      <div class="col-12 col-md-4">
+        <button onclick="drawCard('trap')" class="btn btn-primary text-white w-100 h-100 py-5 shadow d-flex flex-column align-items-center justify-content-center card-deck-btn" style="border: 4px solid #cfe2ff">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <h2 class="fs-3 fw-bold mt-3" style="letter-spacing: 2px">問題卡</h2>
+          <p class="small mt-1 text-white-50 mb-0">布袋文化題目 (20張)</p>
+        </button>
+      </div>
+
+      <!-- 技能卡牌堆 -->
+      <div class="col-12 col-md-4">
+        <button onclick="drawCard('skill')" class="btn btn-warning text-dark w-100 h-100 py-5 shadow d-flex flex-column align-items-center justify-content-center card-deck-btn" style="border: 4px solid #ffe69c">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <h2 class="fs-3 fw-bold mt-3" style="letter-spacing: 2px">技能卡</h2>
+          <p class="small mt-1 text-dark opacity-75 mb-0">坑害其他玩家 (15張)</p>
+        </button>
+      </div>
+
+      <!-- 冒險卡牌堆 -->
+      <div class="col-12 col-md-4">
+        <button onclick="drawCard('adventure')" class="btn btn-success text-white w-100 h-100 py-5 shadow d-flex flex-column align-items-center justify-content-center card-deck-btn" style="border: 4px solid #d1e7dd">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+          <h2 class="fs-3 fw-bold mt-3" style="letter-spacing: 2px">冒險卡</h2>
+          <p class="small mt-1 text-white-50 mb-0">樂齡溫和互動 (20張)</p>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 卡片彈出視窗 (Modal) -->
+  <div id="modal-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-none align-items-center justify-content-center p-3">
+    <div id="modal-content" class="bg-white shadow-lg overflow-hidden w-100 modal-box">
+      <!-- 內容將由 JavaScript 動態生成 -->
+    </div>
+  </div>
+
+  <script>
+    // --- 資料區：卡牌資料 ---
+    const trapCards = [
+      { id: 1, title: '高跟鞋的祕密', question: '布袋有一個超有名的地標，外型像什麼？', options: { A: '帽子', B: '高跟鞋', C: '船' }, answer: 'B', effect: '答錯後退 2 格。' },
+      { id: 2, title: '魚市大考驗', question: '布袋觀光魚市最具代表性的特色是？', options: { A: '山產很多', B: '漁獲豐富', C: '甜點特別多' }, answer: 'B', effect: '答錯停一回合。' },
+      { id: 3, title: '鹽田記憶', question: '布袋過去很重要的產業之一是什麼？', options: { A: '曬鹽', B: '採茶', C: '挖煤' }, answer: 'A', effect: '答錯失去 1 張手牌。' },
+      { id: 4, title: '候鳥來了', question: '布袋濕地適合從事哪種活動？', options: { A: '賞鳥', B: '滑雪', C: '登高山' }, answer: 'A', effect: '答錯後退 1 格。' },
+      { id: 5, title: '海邊彩繪村', question: '好美里最有名的特色之一是？', options: { A: '溫泉街', B: '3D 彩繪村', C: '夜市' }, answer: 'B', effect: '答錯停一回合。' },
+      { id: 6, title: '布袋的身分', question: '布袋鎮屬於哪一種地方型態？', options: { A: '山城聚落', B: '漁村聚落', C: '工業區' }, answer: 'B', effect: '答錯退回起點前 3 格。' },
+      { id: 7, title: '海味嘉年華', question: '高跟鞋教堂附近常和哪類主題連結？', options: { A: '海洋與觀光', B: '森林探險', C: '高山文化' }, answer: 'A', effect: '答錯本回合不能使用技能卡。' },
+      { id: 8, title: '鹽場謝鹽祭', question: '洲南鹽場的文化活動和哪種在地文化最有關？', options: { A: '製糖文化', B: '鹽田文化', C: '陶藝文化' }, answer: 'B', effect: '答錯後退 2 格。' },
+      { id: 9, title: '港口印象', question: '布袋讓人最容易聯想到哪一種地方風景？', options: { A: '漁港與海景', B: '大草原', C: '火山口' }, answer: 'A', effect: '答錯交出 1 張卡給左手邊玩家。' },
+      { id: 10, title: '紅樹林觀察家', question: '布袋潮間帶與生態區可能看到哪類生物？', options: { A: '招潮蟹與彈塗魚', B: '企鵝', C: '駱駝' }, answer: 'A', effect: '答錯停一回合。', explanation: '布袋鎮公所介紹其潮間帶生態包含招潮蟹、和尚蟹、彈塗魚等。' },
+      { id: 11, title: '好美里的舊名', question: '好美里早期曾被稱作什麼？', options: { A: '魍港', B: '鹿港', C: '安平' }, answer: 'A', effect: '答錯後退 1 格。', explanation: '好美里沿革中提到其早期稱為魍港。' },
+      { id: 12, title: '布袋限定活動', question: '下列哪一個是布袋代表性的地方活動？', options: { A: '謝鹽祭', B: '放天燈節', C: '花火祭' }, answer: 'A', effect: '答錯失去一次前進機會。', explanation: '布袋鎮公所列有洲南鹽場－謝鹽祭等地方特色活動。' },
+      { id: 13, title: '宗教熱鬧日', question: '新塭嘉應廟和哪一類文化有關？', options: { A: '宗教民俗', B: '科學展覽', C: '森林保育' }, answer: 'A', effect: '答錯停一回合。', explanation: '布袋有知名廟宇與民俗活動，如新塭嘉應廟。' },
+      { id: 14, title: '布袋海味', question: '布袋最有名的飲食印象是？', options: { A: '海產', B: '乳酪', C: '高山茶' }, answer: 'A', effect: '答錯後退 2 格。', explanation: '地方介紹指出布袋海鮮名聞全臺。' },
+      { id: 15, title: '彩繪拍照點', question: '好美里 3D 彩繪村最適合做什麼？', options: { A: '拍照互動', B: '滑雪競速', C: '泛舟' }, answer: 'A', effect: '答錯把手上最多的一張卡棄掉。' },
+      { id: 16, title: '濕地之友', question: '布袋濕地原本和哪種土地利用有關？', options: { A: '閒置鹽田', B: '機場跑道', C: '高爾夫球場' }, answer: 'A', effect: '答錯後退 2 格。', explanation: '嘉義文化觀光相關資料提到布袋濕地原為閒置鹽田形成自然濕地。' },
+      { id: 17, title: '海邊公園', question: '高跟鞋教堂位於哪種場域附近？', options: { A: '海景公園', B: '山頂纜車站', C: '森林步道' }, answer: 'A', effect: '答錯停一回合。', explanation: '官方資料指出高跟鞋教堂位於海景公園。' },
+      { id: 18, title: '地方產業猜猜看', question: '下列何者較符合布袋的地方產業？', options: { A: '漁業與養殖', B: '葡萄酒莊', C: '礦坑採煤' }, answer: 'A', effect: '答錯後退 1 格。', explanation: '官方觀光資訊列出布袋的漁產、養殖等地方產業。' },
+      { id: 19, title: '海港路線', question: '布袋給人的旅行印象通常較偏向哪一種？', options: { A: '濱海觀光', B: '高山露營', C: '森林避暑' }, answer: 'A', effect: '答錯交出 50 金幣或等值資源。' },
+      { id: 20, title: '布袋文化通', question: '下列何者最能代表布袋？', options: { A: '鹽田、漁港、濕地', B: '雪山、楓葉、溫泉', C: '稻田、茶園、纜車' }, answer: 'A', effect: '答錯直接後退 3 格。' }
+    ];
+
+    const adventureCards = [
+      { id: 1, title: '老照片時光機', content: '分享一張老照片背後的故事。', effect: '前進 2 格。' },
+      { id: 2, title: '回憶小歌王', content: '哼唱一段熟悉的老歌，其他玩家猜歌名。', effect: '成功前進 2 格。' },
+      { id: 3, title: '布袋小導遊', content: '說出一個你去過的海邊、漁港或市場回憶。', effect: '前進 1 格。' },
+      { id: 4, title: '拍拍手體操', content: '完成 20 秒坐姿拍拍手運動。', effect: '前進 1 格。' },
+      { id: 5, title: '故事接龍', content: '用「我小時候最難忘的一天是……」說一句話。', effect: '前進 2 格。' },
+      { id: 6, title: '笑一個', content: '講一件自己年輕時做過的趣事。', effect: '前進 1 格，並可再抽 1 張卡。' },
+      { id: 7, title: '回憶菜市場', content: '說出一種你以前常買的食物。', effect: '前進 1 格。' },
+      { id: 8, title: '家鄉味道', content: '分享一道你最拿手或最懷念的家常菜。', effect: '前進 2 格。' },
+      { id: 9, title: '手指暖身操', content: '完成簡單手指伸展 15 秒。', effect: '前進 1 格。' },
+      { id: 10, title: '一起比手畫腳', content: '用動作表演「捕魚、曬鹽、買菜」其中一個。', effect: '成功則前進 2 格。' },
+      { id: 11, title: '名字的故事', content: '分享自己名字或小名的由來。', effect: '前進 1 格。' },
+      { id: 12, title: '節慶記憶', content: '說出一個你印象最深刻的節日習俗。', effect: '前進 2 格。' },
+      { id: 13, title: '笑容傳遞', content: '和左右玩家互相稱讚一句。', effect: '全員心情加分，你前進 1 格。' },
+      { id: 14, title: '懷舊職業談', content: '分享一種你年輕時看過或做過的工作。', effect: '前進 2 格。' },
+      { id: 15, title: '今日天氣播報員', content: '用自己的方式形容今天的天氣。', effect: '前進 1 格。' },
+      { id: 16, title: '記憶挑戰', content: '說出三種海邊會看到的東西。', effect: '成功前進 2 格。' },
+      { id: 17, title: '你說我猜', content: '描述一樣常見生活用品，讓其他玩家猜。', effect: '猜中則前進 2 格。' },
+      { id: 18, title: '幸福的一天', content: '分享一件讓你覺得幸福的小事。', effect: '前進 1 格，恢復一次被限制的行動。' },
+      { id: 19, title: '慢慢走也很棒', content: '站起或坐著做 10 秒抬腳／抬手運動。', effect: '前進 1 格。' },
+      { id: 20, title: '人生一句話', content: '送給年輕人一句建議。', effect: '前進 3 格。' }
+    ];
+
+    const skillCards = [
+      { id: 1, title: '原地打轉', content: '指定一名玩家下回合不能前進。' },
+      { id: 2, title: '走錯路啦', content: '指定一名玩家立刻後退 3 格。' },
+      { id: 3, title: '迷路地圖', content: '指定一名玩家本回合前進方向無效，改停在原地。' },
+      { id: 4, title: '手忙腳亂', content: '指定一名玩家棄掉 1 張手牌。' },
+      { id: 5, title: '假好心幫忙', content: '你和指定玩家交換位置。' },
+      { id: 6, title: '塞車啦', content: '指定一名玩家本輪不能使用技能卡。' },
+      { id: 7, title: '跌進泥巴坑', content: '指定一名玩家連續兩回合每次少走 1 格。' },
+      { id: 8, title: '偷天換日', content: '偷看一名玩家手牌，並隨機抽走 1 張。' },
+      { id: 9, title: '借力使力', content: '把你本來要承受的負面效果轉移給另一位玩家。' },
+      { id: 10, title: '烏龍指令', content: '指定一名玩家下回合抽到的冒險卡立即失效。' },
+      { id: 11, title: '假消息', content: '指定一名玩家本回合得到的獎勵減半。' },
+      { id: 12, title: '卡牌封印', content: '指定一名玩家 2 回合內不能使用手上的技能卡。' },
+      { id: 13, title: '搶先一步', content: '指定一名玩家後退 2 格，你前進 2 格。' },
+      { id: 14, title: '打翻行李', content: '指定一名玩家把手牌洗回牌堆，再重抽 1 張。' },
+      { id: 15, title: '你先休息', content: '指定一名玩家跳過一次抽卡階段。' }
+    ];
+
+    // --- 系統狀態管理 ---
+    let activeCard = null;
+    let deckType = null;
+    let trapState = 'answering'; // 'answering', 'correct', 'wrong'
+    let selectedAnswer = null;
+    
+    // 記錄各牌堆最後一次抽到的卡牌 ID，避免連續抽到重複的
+    let lastDrawn = { trap: null, adventure: null, skill: null };
+
+    // --- 邏輯函數 ---
+    function drawCard(type) {
+      let deck = [];
+      if (type === 'trap') deck = trapCards;
+      if (type === 'adventure') deck = adventureCards;
+      if (type === 'skill') deck = skillCards;
+
+      // 過濾掉上次抽到的卡牌
+      const availableCards = deck.filter(card => card.id !== lastDrawn[type]);
+
+      // 隨機抽一張
+      const randomIndex = Math.floor(Math.random() * availableCards.length);
+      const selectedCard = availableCards[randomIndex];
+
+      activeCard = selectedCard;
+      deckType = type;
+      lastDrawn[type] = selectedCard.id;
+      
+      trapState = 'answering';
+      selectedAnswer = null;
+
+      renderModal();
+    }
+
+    function closeCard() {
+      const overlay = document.getElementById('modal-overlay');
+      overlay.classList.remove('show');
+      setTimeout(() => {
+        overlay.classList.add('d-none');
+        overlay.classList.remove('d-flex');
+        activeCard = null;
+        deckType = null;
+      }, 300); // 等待動畫完成
+    }
+
+    function handleTrapAnswer(key) {
+      if (trapState !== 'answering') return;
+      selectedAnswer = key;
+      if (key === activeCard.answer) {
+        trapState = 'correct';
+      } else {
+        trapState = 'wrong';
+      }
+      renderModal();
+    }
+
+    // --- 渲染畫面函數 ---
+    function renderModal() {
+      const overlay = document.getElementById('modal-overlay');
+      const content = document.getElementById('modal-content');
+      
+      if (!activeCard) return;
+
+      // 顯示 Modal
+      overlay.classList.remove('d-none');
+      overlay.classList.add('d-flex');
+      // 觸發動畫
+      setTimeout(() => overlay.classList.add('show'), 10);
+
+      // 設定標題顏色與文字
+      let headerBg = '', headerText = '', badgeColor = '';
+      if (deckType === 'trap') {
+        headerBg = 'bg-primary text-white';
+        headerText = '【 問題卡 】';
+        badgeColor = 'border-white';
+      } else if (deckType === 'adventure') {
+        headerBg = 'bg-success text-white';
+        headerText = '【 冒險卡 】';
+        badgeColor = 'border-white';
+      } else if (deckType === 'skill') {
+        headerBg = 'bg-warning text-dark';
+        headerText = '【 技能卡 】';
+        badgeColor = 'border-dark';
+      }
+
+      // 組合 HTML 結構
+      let htmlStr = `
+        <div class="px-4 py-3 d-flex align-items-center justify-content-between ${headerBg}" style="flex-shrink: 0;">
+          <span class="fw-bold" style="letter-spacing: 1px">${headerText}</span>
+          <span class="badge border rounded-pill fs-6 px-3 ${badgeColor}">No. ${activeCard.id}</span>
+        </div>
+        <div class="p-4" style="overflow-y: auto; flex-grow: 1;">
+          <h3 class="h4 fw-bold text-center mb-4 text-dark">${activeCard.title}</h3>
+      `;
+
+      // 依據卡牌類型渲染不同內容
+      if (deckType === 'trap') {
+        htmlStr += `<div><p class="fs-5 text-dark mb-4">${activeCard.question}</p><div class="d-grid gap-2">`;
+        
+        // 渲染選項按鈕
+        for (const [key, text] of Object.entries(activeCard.options)) {
+          let btnClass = "btn text-start p-3 border-2 ";
+          
+          if (trapState === 'answering') {
+            btnClass += "btn-outline-secondary text-dark bg-light";
+          } else {
+            if (key === activeCard.answer) {
+              btnClass += "btn-success bg-success bg-opacity-10 text-success border-success";
+            } else if (key === selectedAnswer && key !== activeCard.answer) {
+              btnClass += "btn-danger bg-danger bg-opacity-10 text-danger border-danger";
+            } else {
+              btnClass += "btn-outline-secondary opacity-50";
+            }
+          }
+
+          const disabledAttr = trapState !== 'answering' ? 'disabled' : '';
+          htmlStr += `<button onclick="handleTrapAnswer('${key}')" class="${btnClass}" style="border-radius: 0.75rem; font-weight: 500;" ${disabledAttr}><span class="fw-bold me-3 fs-5">${key}.</span> ${text}</button>`;
+        }
+        htmlStr += `</div>`;
+
+        // 渲染答題結果
+        if (trapState !== 'answering') {
+          const isCorrect = trapState === 'correct';
+          const alertClass = isCorrect ? 'bg-success bg-opacity-10 border-success' : 'bg-danger bg-opacity-10 border-danger';
+          const titleColor = isCorrect ? 'text-success' : 'text-danger';
+          const titleText = isCorrect ? '🎉 答對了！' : '💥 答錯了！';
+
+          htmlStr += `<div class="mt-4 p-4 rounded-3 text-center border ${alertClass}">
+                        <h4 class="fs-5 fw-bold mb-2 ${titleColor}">${titleText}</h4>`;
+          
+          if (isCorrect) {
+            htmlStr += `<p class="text-success fw-bold mb-0 fs-5">免受罰，安全過關！</p>`;
+          } else {
+            htmlStr += `<div class="text-danger">
+                          <p class="mb-1 text-secondary">觸發效果：</p>
+                          <p class="fs-5 fw-bold bg-white py-2 rounded shadow-sm border border-danger mb-0">${activeCard.effect}</p>
+                        </div>`;
+          }
+
+          if (activeCard.explanation) {
+            htmlStr += `<div class="mt-3 text-start bg-white p-3 rounded border shadow-sm">
+                          <span class="fw-bold text-primary d-block mb-1">💡 知識補充：</span>
+                          <span class="text-secondary small">${activeCard.explanation}</span>
+                        </div>`;
+          }
+          htmlStr += `</div>`;
+        }
+        htmlStr += `</div>`;
+
+      } else if (deckType === 'adventure') {
+        htmlStr += `
+          <div class="text-center">
+            <div class="bg-success bg-opacity-10 text-success p-4 rounded-3 border border-success mb-4">
+              <p class="fs-5 fw-bold mb-0">${activeCard.content}</p>
+            </div>
+            <div class="border-top pt-4">
+              <p class="text-secondary mb-1">完成任務獎勵：</p>
+              <p class="h3 fw-bold text-success mb-0">${activeCard.effect}</p>
+            </div>
+          </div>
+        `;
+      } else if (deckType === 'skill') {
+        htmlStr += `
+          <div class="text-center">
+            <div class="bg-warning bg-opacity-25 text-dark p-4 rounded-3 border border-warning mb-4">
+              <p class="fs-5 fw-bold mb-0">${activeCard.content}</p>
+            </div>
+            <p class="text-secondary">👉 請立即對其他玩家發動此效果！</p>
+          </div>
+        `;
+      }
+
+      // 關閉按鈕
+      const isTrapAnswering = (deckType === 'trap' && trapState === 'answering');
+      let closeBtnClass = "btn w-100 py-3 mt-4 fw-bold fs-5 shadow-sm ";
+      
+      if (isTrapAnswering) closeBtnClass += "btn-secondary disabled";
+      else if (deckType === 'trap') closeBtnClass += "btn-primary text-white";
+      else if (deckType === 'adventure') closeBtnClass += "btn-success text-white";
+      else if (deckType === 'skill') closeBtnClass += "btn-warning text-dark";
+
+      const closeBtnText = isTrapAnswering ? '請先回答問題' : '確認 / 關閉';
+      const disabledAttr = isTrapAnswering ? 'disabled' : '';
+
+      htmlStr += `
+          <button onclick="closeCard()" class="${closeBtnClass}" style="border-radius: 0.75rem;" ${disabledAttr}>${closeBtnText}</button>
+        </div>
+      `;
+
+      content.innerHTML = htmlStr;
+    }
+  </script>
+</body>
+</html>
