@@ -1,387 +1,844 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>布袋文化桌遊抽卡機</title>
-  <!-- 載入 Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      font-family: sans-serif;
-    }
-    .card-deck-btn {
-      min-height: 260px;
-      border-radius: 1.25rem;
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s;
-    }
-    .card-deck-btn:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    /* 卡片彈出視窗動畫與背景 */
-    #modal-overlay {
-      background-color: rgba(0,0,0,0.65);
-      z-index: 1050;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    #modal-overlay.show {
-      opacity: 1;
-    }
-    .modal-box {
-      max-width: 500px;
-      max-height: 90vh; /* 限制最大高度為螢幕的 90% */
-      display: flex; /* 改用 Flex 排版 */
-      flex-direction: column;
-      border-radius: 1.5rem;
-      transform: scale(0.9);
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    #modal-overlay.show .modal-box {
-      transform: scale(1);
-    }
-
-    /* 新增：手機轉向提示與動畫 */
-    @media screen and (max-width: 768px) and (orientation: portrait) {
-      #orientation-warning {
-        display: flex !important;
-      }
-      body {
-        overflow: hidden; /* 防止直向時仍可滑動背後內容 */
-      }
-    }
-    @keyframes rotatePhone {
-      0% { transform: rotate(0deg); }
-      50% { transform: rotate(-90deg); }
-      100% { transform: rotate(-90deg); }
-    }
-  </style>
-</head>
-<body class="bg-light min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
-
-  <!-- 新增：手機直向時的旋轉提示 -->
-  <div id="orientation-warning" style="display: none; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); z-index: 9999; text-align: center; padding: 2rem;">
-    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mb-4" style="animation: rotatePhone 2s infinite ease-in-out;">
-      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-      <line x1="12" y1="18" x2="12.01" y2="18"></line>
-    </svg>
-    <h2 class="fw-bold text-dark mb-3">請旋轉您的手機</h2>
-    <p class="text-secondary fs-5">本桌遊專為橫向螢幕設計，<br>請將手機打橫以獲得最佳遊玩體驗！</p>
-  </div>
-
-  <!-- 遊戲標題 -->
-  <div class="text-center mb-5">
-    <h1 class="display-4 fw-bold text-primary mb-2 shadow-sm" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1)">布袋時光桌遊</h1>
-    <p class="text-secondary fs-5">點擊下方牌堆抽取卡片</p>
-  </div>
-
-  <!-- 牌堆區域 -->
-  <div class="container">
-    <div class="row g-4 justify-content-center" style="max-width: 900px; margin: 0 auto;">
-      
-      <!-- 問題卡牌堆 -->
-      <div class="col-12 col-md-4">
-        <button onclick="drawCard('trap')" class="btn btn-primary text-white w-100 h-100 py-5 shadow d-flex flex-column align-items-center justify-content-center card-deck-btn" style="border: 4px solid #cfe2ff">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <h2 class="fs-3 fw-bold mt-3" style="letter-spacing: 2px">問題卡</h2>
-          <p class="small mt-1 text-white-50 mb-0">布袋文化題目 (20張)</p>
-        </button>
-      </div>
-
-      <!-- 技能卡牌堆 -->
-      <div class="col-12 col-md-4">
-        <button onclick="drawCard('skill')" class="btn btn-warning text-dark w-100 h-100 py-5 shadow d-flex flex-column align-items-center justify-content-center card-deck-btn" style="border: 4px solid #ffe69c">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <h2 class="fs-3 fw-bold mt-3" style="letter-spacing: 2px">技能卡</h2>
-          <p class="small mt-1 text-dark opacity-75 mb-0">坑害其他玩家 (15張)</p>
-        </button>
-      </div>
-
-      <!-- 冒險卡牌堆 -->
-      <div class="col-12 col-md-4">
-        <button onclick="drawCard('adventure')" class="btn btn-success text-white w-100 h-100 py-5 shadow d-flex flex-column align-items-center justify-content-center card-deck-btn" style="border: 4px solid #d1e7dd">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-          </svg>
-          <h2 class="fs-3 fw-bold mt-3" style="letter-spacing: 2px">冒險卡</h2>
-          <p class="small mt-1 text-white-50 mb-0">樂齡溫和互動 (20張)</p>
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 卡片彈出視窗 (Modal) -->
-  <div id="modal-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-none align-items-center justify-content-center p-3">
-    <div id="modal-content" class="bg-white shadow-lg overflow-hidden w-100 modal-box">
-      <!-- 內容將由 JavaScript 動態生成 -->
-    </div>
-  </div>
-
-  <script>
-    // --- 資料區：卡牌資料 ---
-    const trapCards = [
-      { id: 1, title: '高跟鞋的祕密', question: '布袋有一個超有名的地標，外型像什麼？', options: { A: '帽子', B: '高跟鞋', C: '船' }, answer: 'B', effect: '答錯後退 2 格。' },
-      { id: 2, title: '魚市大考驗', question: '布袋觀光魚市最具代表性的特色是？', options: { A: '山產很多', B: '漁獲豐富', C: '甜點特別多' }, answer: 'B', effect: '答錯停一回合。' },
-      { id: 3, title: '鹽田記憶', question: '布袋過去很重要的產業之一是什麼？', options: { A: '曬鹽', B: '採茶', C: '挖煤' }, answer: 'A', effect: '答錯失去 1 張手牌。' },
-      { id: 4, title: '候鳥來了', question: '布袋濕地適合從事哪種活動？', options: { A: '賞鳥', B: '滑雪', C: '登高山' }, answer: 'A', effect: '答錯後退 1 格。' },
-      { id: 5, title: '海邊彩繪村', question: '好美里最有名的特色之一是？', options: { A: '溫泉街', B: '3D 彩繪村', C: '夜市' }, answer: 'B', effect: '答錯停一回合。' },
-      { id: 6, title: '布袋的身分', question: '布袋鎮屬於哪一種地方型態？', options: { A: '山城聚落', B: '漁村聚落', C: '工業區' }, answer: 'B', effect: '答錯退回起點前 3 格。' },
-      { id: 7, title: '海味嘉年華', question: '高跟鞋教堂附近常和哪類主題連結？', options: { A: '海洋與觀光', B: '森林探險', C: '高山文化' }, answer: 'A', effect: '答錯本回合不能使用技能卡。' },
-      { id: 8, title: '鹽場謝鹽祭', question: '洲南鹽場的文化活動和哪種在地文化最有關？', options: { A: '製糖文化', B: '鹽田文化', C: '陶藝文化' }, answer: 'B', effect: '答錯後退 2 格。' },
-      { id: 9, title: '港口印象', question: '布袋讓人最容易聯想到哪一種地方風景？', options: { A: '漁港與海景', B: '大草原', C: '火山口' }, answer: 'A', effect: '答錯交出 1 張卡給左手邊玩家。' },
-      { id: 10, title: '紅樹林觀察家', question: '布袋潮間帶與生態區可能看到哪類生物？', options: { A: '招潮蟹與彈塗魚', B: '企鵝', C: '駱駝' }, answer: 'A', effect: '答錯停一回合。', explanation: '布袋鎮公所介紹其潮間帶生態包含招潮蟹、和尚蟹、彈塗魚等。' },
-      { id: 11, title: '好美里的舊名', question: '好美里早期曾被稱作什麼？', options: { A: '魍港', B: '鹿港', C: '安平' }, answer: 'A', effect: '答錯後退 1 格。', explanation: '好美里沿革中提到其早期稱為魍港。' },
-      { id: 12, title: '布袋限定活動', question: '下列哪一個是布袋代表性的地方活動？', options: { A: '謝鹽祭', B: '放天燈節', C: '花火祭' }, answer: 'A', effect: '答錯失去一次前進機會。', explanation: '布袋鎮公所列有洲南鹽場－謝鹽祭等地方特色活動。' },
-      { id: 13, title: '宗教熱鬧日', question: '新塭嘉應廟和哪一類文化有關？', options: { A: '宗教民俗', B: '科學展覽', C: '森林保育' }, answer: 'A', effect: '答錯停一回合。', explanation: '布袋有知名廟宇與民俗活動，如新塭嘉應廟。' },
-      { id: 14, title: '布袋海味', question: '布袋最有名的飲食印象是？', options: { A: '海產', B: '乳酪', C: '高山茶' }, answer: 'A', effect: '答錯後退 2 格。', explanation: '地方介紹指出布袋海鮮名聞全臺。' },
-      { id: 15, title: '彩繪拍照點', question: '好美里 3D 彩繪村最適合做什麼？', options: { A: '拍照互動', B: '滑雪競速', C: '泛舟' }, answer: 'A', effect: '答錯把手上最多的一張卡棄掉。' },
-      { id: 16, title: '濕地之友', question: '布袋濕地原本和哪種土地利用有關？', options: { A: '閒置鹽田', B: '機場跑道', C: '高爾夫球場' }, answer: 'A', effect: '答錯後退 2 格。', explanation: '嘉義文化觀光相關資料提到布袋濕地原為閒置鹽田形成自然濕地。' },
-      { id: 17, title: '海邊公園', question: '高跟鞋教堂位於哪種場域附近？', options: { A: '海景公園', B: '山頂纜車站', C: '森林步道' }, answer: 'A', effect: '答錯停一回合。', explanation: '官方資料指出高跟鞋教堂位於海景公園。' },
-      { id: 18, title: '地方產業猜猜看', question: '下列何者較符合布袋的地方產業？', options: { A: '漁業與養殖', B: '葡萄酒莊', C: '礦坑採煤' }, answer: 'A', effect: '答錯後退 1 格。', explanation: '官方觀光資訊列出布袋的漁產、養殖等地方產業。' },
-      { id: 19, title: '海港路線', question: '布袋給人的旅行印象通常較偏向哪一種？', options: { A: '濱海觀光', B: '高山露營', C: '森林避暑' }, answer: 'A', effect: '答錯交出 50 金幣或等值資源。' },
-      { id: 20, title: '布袋文化通', question: '下列何者最能代表布袋？', options: { A: '鹽田、漁港、濕地', B: '雪山、楓葉、溫泉', C: '稻田、茶園、纜車' }, answer: 'A', effect: '答錯直接後退 3 格。' }
-    ];
-
-    const adventureCards = [
-      { id: 1, title: '老照片時光機', content: '分享一張老照片背後的故事。', effect: '前進 2 格。' },
-      { id: 2, title: '回憶小歌王', content: '哼唱一段熟悉的老歌，其他玩家猜歌名。', effect: '成功前進 2 格。' },
-      { id: 3, title: '布袋小導遊', content: '說出一個你去過的海邊、漁港或市場回憶。', effect: '前進 1 格。' },
-      { id: 4, title: '拍拍手體操', content: '完成 20 秒坐姿拍拍手運動。', effect: '前進 1 格。' },
-      { id: 5, title: '故事接龍', content: '用「我小時候最難忘的一天是……」說一句話。', effect: '前進 2 格。' },
-      { id: 6, title: '笑一個', content: '講一件自己年輕時做過的趣事。', effect: '前進 1 格，並可再抽 1 張卡。' },
-      { id: 7, title: '回憶菜市場', content: '說出一種你以前常買的食物。', effect: '前進 1 格。' },
-      { id: 8, title: '家鄉味道', content: '分享一道你最拿手或最懷念的家常菜。', effect: '前進 2 格。' },
-      { id: 9, title: '手指暖身操', content: '完成簡單手指伸展 15 秒。', effect: '前進 1 格。' },
-      { id: 10, title: '一起比手畫腳', content: '用動作表演「捕魚、曬鹽、買菜」其中一個。', effect: '成功則前進 2 格。' },
-      { id: 11, title: '名字的故事', content: '分享自己名字或小名的由來。', effect: '前進 1 格。' },
-      { id: 12, title: '節慶記憶', content: '說出一個你印象最深刻的節日習俗。', effect: '前進 2 格。' },
-      { id: 13, title: '笑容傳遞', content: '和左右玩家互相稱讚一句。', effect: '全員心情加分，你前進 1 格。' },
-      { id: 14, title: '懷舊職業談', content: '分享一種你年輕時看過或做過的工作。', effect: '前進 2 格。' },
-      { id: 15, title: '今日天氣播報員', content: '用自己的方式形容今天的天氣。', effect: '前進 1 格。' },
-      { id: 16, title: '記憶挑戰', content: '說出三種海邊會看到的東西。', effect: '成功前進 2 格。' },
-      { id: 17, title: '你說我猜', content: '描述一樣常見生活用品，讓其他玩家猜。', effect: '猜中則前進 2 格。' },
-      { id: 18, title: '幸福的一天', content: '分享一件讓你覺得幸福的小事。', effect: '前進 1 格，恢復一次被限制的行動。' },
-      { id: 19, title: '慢慢走也很棒', content: '站起或坐著做 10 秒抬腳／抬手運動。', effect: '前進 1 格。' },
-      { id: 20, title: '人生一句話', content: '送給年輕人一句建議。', effect: '前進 3 格。' }
-    ];
-
-    const skillCards = [
-      { id: 1, title: '原地打轉', content: '指定一名玩家下回合不能前進。' },
-      { id: 2, title: '走錯路啦', content: '指定一名玩家立刻後退 3 格。' },
-      { id: 3, title: '迷路地圖', content: '指定一名玩家本回合前進方向無效，改停在原地。' },
-      { id: 4, title: '手忙腳亂', content: '指定一名玩家棄掉 1 張手牌。' },
-      { id: 5, title: '假好心幫忙', content: '你和指定玩家交換位置。' },
-      { id: 6, title: '塞車啦', content: '指定一名玩家本輪不能使用技能卡。' },
-      { id: 7, title: '跌進泥巴坑', content: '指定一名玩家連續兩回合每次少走 1 格。' },
-      { id: 8, title: '偷天換日', content: '偷看一名玩家手牌，並隨機抽走 1 張。' },
-      { id: 9, title: '借力使力', content: '把你本來要承受的負面效果轉移給另一位玩家。' },
-      { id: 10, title: '烏龍指令', content: '指定一名玩家下回合抽到的冒險卡立即失效。' },
-      { id: 11, title: '假消息', content: '指定一名玩家本回合得到的獎勵減半。' },
-      { id: 12, title: '卡牌封印', content: '指定一名玩家 2 回合內不能使用手上的技能卡。' },
-      { id: 13, title: '搶先一步', content: '指定一名玩家後退 2 格，你前進 2 格。' },
-      { id: 14, title: '打翻行李', content: '指定一名玩家把手牌洗回牌堆，再重抽 1 張。' },
-      { id: 15, title: '你先休息', content: '指定一名玩家跳過一次抽卡階段。' }
-    ];
-
-    // --- 系統狀態管理 ---
-    let activeCard = null;
-    let deckType = null;
-    let trapState = 'answering'; // 'answering', 'correct', 'wrong'
-    let selectedAnswer = null;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題與冒險 - 雙重抽卡系統</title>
+    <!-- 引入 Tailwind CSS 進行精美排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google 字型 Inter & Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
     
-    // 記錄各牌堆最後一次抽到的卡牌 ID，避免連續抽到重複的
-    let lastDrawn = { trap: null, adventure: null, skill: null };
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #0b0f19;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.08) 0px, transparent 50%);
+        }
 
-    // --- 邏輯函數 ---
-    function drawCard(type) {
-      let deck = [];
-      if (type === 'trap') deck = trapCards;
-      if (type === 'adventure') deck = adventureCards;
-      if (type === 'skill') deck = skillCards;
+        /* 3D 卡牌翻轉屬性 */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
 
-      // 過濾掉上次抽到的卡牌
-      const availableCards = deck.filter(card => card.id !== lastDrawn[type]);
+        /* 卡牌懸浮微光 */
+        .glow-green {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .glow-blue {
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+        }
 
-      // 隨機抽一張
-      const randomIndex = Math.floor(Math.random() * availableCards.length);
-      const selectedCard = availableCards[randomIndex];
+        /* 卡牌堆疊立體感 */
+        .deck-shadow-green {
+            box-shadow: 
+                4px 4px 0px rgba(16, 185, 129, 0.3),
+                8px 8px 0px rgba(16, 185, 129, 0.15),
+                12px 12px 20px rgba(0, 0, 0, 0.5);
+        }
+        .deck-shadow-blue {
+            box-shadow: 
+                -4px 4px 0px rgba(14, 165, 233, 0.3),
+                -8px 8px 0px rgba(14, 165, 233, 0.15),
+                -12px 12px 20px rgba(0, 0, 0, 0.5);
+        }
 
-      activeCard = selectedCard;
-      deckType = type;
-      lastDrawn[type] = selectedCard.id;
-      
-      trapState = 'answering';
-      selectedAnswer = null;
+        /* 呼吸效果 */
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1)); }
+            50% { transform: scale(1.03); filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3)); }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
 
-      renderModal();
-    }
-
-    function closeCard() {
-      const overlay = document.getElementById('modal-overlay');
-      overlay.classList.remove('show');
-      setTimeout(() => {
-        overlay.classList.add('d-none');
-        overlay.classList.remove('d-flex');
-        activeCard = null;
-        deckType = null;
-      }, 300); // 等待動畫完成
-    }
-
-    function handleTrapAnswer(key) {
-      if (trapState !== 'answering') return;
-      selectedAnswer = key;
-      if (key === activeCard.answer) {
-        trapState = 'correct';
-      } else {
-        trapState = 'wrong';
-      }
-      renderModal();
-    }
-
-    // --- 渲染畫面函數 ---
-    function renderModal() {
-      const overlay = document.getElementById('modal-overlay');
-      const content = document.getElementById('modal-content');
-      
-      if (!activeCard) return;
-
-      // 顯示 Modal
-      overlay.classList.remove('d-none');
-      overlay.classList.add('d-flex');
-      // 觸發動畫
-      setTimeout(() => overlay.classList.add('show'), 10);
-
-      // 設定標題顏色與文字
-      let headerBg = '', headerText = '', badgeColor = '';
-      if (deckType === 'trap') {
-        headerBg = 'bg-primary text-white';
-        headerText = '【 問題卡 】';
-        badgeColor = 'border-white';
-      } else if (deckType === 'adventure') {
-        headerBg = 'bg-success text-white';
-        headerText = '【 冒險卡 】';
-        badgeColor = 'border-white';
-      } else if (deckType === 'skill') {
-        headerBg = 'bg-warning text-dark';
-        headerText = '【 技能卡 】';
-        badgeColor = 'border-dark';
-      }
-
-      // 組合 HTML 結構
-      let htmlStr = `
-        <div class="px-4 py-3 d-flex align-items-center justify-content-between ${headerBg}" style="flex-shrink: 0;">
-          <span class="fw-bold" style="letter-spacing: 1px">${headerText}</span>
-          <span class="badge border rounded-pill fs-6 px-3 ${badgeColor}">No. ${activeCard.id}</span>
-        </div>
-        <div class="p-4" style="overflow-y: auto; flex-grow: 1;">
-          <h3 class="h4 fw-bold text-center mb-4 text-dark">${activeCard.title}</h3>
-      `;
-
-      // 依據卡牌類型渲染不同內容
-      if (deckType === 'trap') {
-        htmlStr += `<div><p class="fs-5 text-dark mb-4">${activeCard.question}</p><div class="d-grid gap-2">`;
-        
-        // 渲染選項按鈕
-        for (const [key, text] of Object.entries(activeCard.options)) {
-          let btnClass = "btn text-start p-3 border-2 ";
-          
-          if (trapState === 'answering') {
-            btnClass += "btn-outline-secondary text-dark bg-light";
-          } else {
-            if (key === activeCard.answer) {
-              btnClass += "btn-success bg-success bg-opacity-10 text-success border-success";
-            } else if (key === selectedAnswer && key !== activeCard.answer) {
-              btnClass += "btn-danger bg-danger bg-opacity-10 text-danger border-danger";
-            } else {
-              btnClass += "btn-outline-secondary opacity-50";
+        /* 超小螢幕適應：等比縮放舞台，防止寬度溢出 */
+        @media (max-width: 375px) {
+            .perspective-1000 {
+                transform: scale(0.9);
+                transform-origin: center center;
             }
-          }
-
-          const disabledAttr = trapState !== 'answering' ? 'disabled' : '';
-          htmlStr += `<button onclick="handleTrapAnswer('${key}')" class="${btnClass}" style="border-radius: 0.75rem; font-weight: 500;" ${disabledAttr}><span class="fw-bold me-3 fs-5">${key}.</span> ${text}</button>`;
+            .stage-container {
+                gap: 1rem !important;
+            }
         }
-        htmlStr += `</div>`;
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between overflow-x-hidden">
 
-        // 渲染答題結果
-        if (trapState !== 'answering') {
-          const isCorrect = trapState === 'correct';
-          const alertClass = isCorrect ? 'bg-success bg-opacity-10 border-success' : 'bg-danger bg-opacity-10 border-danger';
-          const titleColor = isCorrect ? 'text-success' : 'text-danger';
-          const titleText = isCorrect ? '🎉 答對了！' : '💥 答錯了！';
-
-          htmlStr += `<div class="mt-4 p-4 rounded-3 text-center border ${alertClass}">
-                        <h4 class="fs-5 fw-bold mb-2 ${titleColor}">${titleText}</h4>`;
-          
-          if (isCorrect) {
-            htmlStr += `<p class="text-success fw-bold mb-0 fs-5">免受罰，安全過關！</p>`;
-          } else {
-            htmlStr += `<div class="text-danger">
-                          <p class="mb-1 text-secondary">觸發效果：</p>
-                          <p class="fs-5 fw-bold bg-white py-2 rounded shadow-sm border border-danger mb-0">${activeCard.effect}</p>
-                        </div>`;
-          }
-
-          if (activeCard.explanation) {
-            htmlStr += `<div class="mt-3 text-start bg-white p-3 rounded border shadow-sm">
-                          <span class="fw-bold text-primary d-block mb-1">💡 知識補充：</span>
-                          <span class="text-secondary small">${activeCard.explanation}</span>
-                        </div>`;
-          }
-          htmlStr += `</div>`;
-        }
-        htmlStr += `</div>`;
-
-      } else if (deckType === 'adventure') {
-        htmlStr += `
-          <div class="text-center">
-            <div class="bg-success bg-opacity-10 text-success p-4 rounded-3 border border-success mb-4">
-              <p class="fs-5 fw-bold mb-0">${activeCard.content}</p>
+    <!-- 頂部 Header -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-4 py-4 transition-all">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-br from-emerald-500 to-sky-500 rounded-xl shadow-lg">
+                    <!-- 命運之輪 SVG 圖標 -->
+                    <svg class="w-6 h-6 text-white animate-spin" style="animation-duration: 20s;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-xl tracking-wider bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
+                        問題與冒險 <span class="text-sm font-normal text-slate-400 block sm:inline">✦ 問題與冒險雙重抽卡</span>
+                    </h1>
+                </div>
             </div>
-            <div class="border-top pt-4">
-              <p class="text-secondary mb-1">完成任務獎勵：</p>
-              <p class="h3 fw-bold text-success mb-0">${activeCard.effect}</p>
+
+            <!-- 控制面板：重設、聲音 -->
+            <div class="flex items-center gap-3">
+                <button id="soundToggleBtn" onclick="toggleSound()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm transition-all shadow-md">
+                    <span id="soundIcon">🔊</span>
+                    <span id="soundText" class="hidden sm:inline">音效：開啟</span>
+                </button>
+                <button onclick="resetAllDecks()" class="flex items-center gap-2 px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 rounded-lg text-sm transition-all shadow-md">
+                    <span>🔄</span>
+                    <span>重設牌庫</span>
+                </button>
             </div>
-          </div>
-        `;
-      } else if (deckType === 'skill') {
-        htmlStr += `
-          <div class="text-center">
-            <div class="bg-warning bg-opacity-25 text-dark p-4 rounded-3 border border-warning mb-4">
-              <p class="fs-5 fw-bold mb-0">${activeCard.content}</p>
-            </div>
-            <p class="text-secondary">👉 請立即對其他玩家發動此效果！</p>
-          </div>
-        `;
-      }
-
-      // 關閉按鈕
-      const isTrapAnswering = (deckType === 'trap' && trapState === 'answering');
-      let closeBtnClass = "btn w-100 py-3 mt-4 fw-bold fs-5 shadow-sm ";
-      
-      if (isTrapAnswering) closeBtnClass += "btn-secondary disabled";
-      else if (deckType === 'trap') closeBtnClass += "btn-primary text-white";
-      else if (deckType === 'adventure') closeBtnClass += "btn-success text-white";
-      else if (deckType === 'skill') closeBtnClass += "btn-warning text-dark";
-
-      const closeBtnText = isTrapAnswering ? '請先回答問題' : '確認 / 關閉';
-      const disabledAttr = isTrapAnswering ? 'disabled' : '';
-
-      htmlStr += `
-          <button onclick="closeCard()" class="${closeBtnClass}" style="border-radius: 0.75rem;" ${disabledAttr}>${closeBtnText}</button>
         </div>
-      `;
+    </header>
 
-      content.innerHTML = htmlStr;
-    }
-  </script>
+    <!-- 主要內容區 -->
+    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow flex flex-col justify-center">
+        <!-- 動態操作引導提示 -->
+        <div class="flex justify-center mb-4">
+            <span id="adaptiveGuide" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-[11px] text-slate-400 font-medium tracking-wide shadow-inner transition-all animate-pulse">
+                <!-- 由 JavaScript 動態填入適合該裝置的指引 -->
+            </span>
+        </div>
+
+        <!-- 統計數據板 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center backdrop-blur-sm">
+                <div class="text-xs text-slate-400 mb-1">冒險卡賸餘</div>
+                <div id="adventureCount" class="text-2xl font-bold text-emerald-400">20 / 20</div>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center backdrop-blur-sm">
+                <div class="text-xs text-slate-400 mb-1">問題卡賸餘</div>
+                <div id="questionCount" class="text-2xl font-bold text-sky-400">20 / 20</div>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center backdrop-blur-sm col-span-2">
+                <div class="text-xs text-slate-400 mb-1">當前遊戲進度</div>
+                <div class="w-full bg-slate-850 rounded-full h-2 mt-2 border border-slate-800 overflow-hidden">
+                    <div id="progressBar" class="bg-gradient-to-r from-emerald-500 to-sky-500 h-full transition-all duration-500" style="width: 100%;"></div>
+                </div>
+                <div id="progressText" class="text-xs text-slate-500 mt-1">已抽取 0 張，元 40 張卡牌</div>
+            </div>
+        </div>
+
+        <!-- 卡牌對戰盤 / 抽卡舞台 -->
+        <div class="stage-container grid grid-cols-1 lg:grid-cols-12 gap-8 items-center justify-center my-auto min-h-[420px]">
+            
+            <!-- 左側：冒險卡牌堆 (綠色, 指南針) -->
+            <div class="lg:col-span-3 flex flex-col items-center justify-center gap-4 order-2 lg:order-1">
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                        ADVENTURE
+                    </span>
+                    <h2 class="text-lg font-bold text-slate-200">冒險卡牌庫</h2>
+                </div>
+
+                <!-- 冒險卡牌堆容器 -->
+                <div id="adventureDeck" onclick="drawCard('adventure')" class="group relative w-56 h-80 cursor-pointer transition-all duration-300 hover:-translate-y-2 select-none">
+                    <!-- 堆疊底層效果 -->
+                    <div id="adventurePileVisual" class="absolute inset-0 bg-emerald-900/30 rounded-2xl border border-emerald-700/30 deck-shadow-green transition-all duration-300">
+                        <!-- 卡背圖案 -->
+                        <div class="absolute inset-2 bg-gradient-to-br from-emerald-950 to-slate-900 rounded-xl border border-emerald-500/30 flex flex-col items-center justify-center p-4">
+                            <!-- 指南針圖形 (SVG) -->
+                            <div class="w-20 h-20 mb-4 text-emerald-400/80 group-hover:scale-110 transition-transform duration-300">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" />
+                                    <path class="origin-center group-hover:rotate-45 transition-transform duration-700 ease-out" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7L14.5 14.5L12 12L9.5 14.5L12 7Z" />
+                                </svg>
+                            </div>
+                            <div class="text-emerald-400 font-extrabold tracking-widest text-lg">冒險卡</div>
+                            <div class="text-[10px] text-emerald-500/60 mt-2 font-mono">TOUCH TO DRAW</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-slate-500 text-center max-w-[200px]">點擊上方牌堆，抽一張隨機的冒險卡</p>
+            </div>
+
+            <!-- 中間：當前翻開的卡牌 -->
+            <div class="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2">
+                <div id="touchStage" class="relative w-72 h-96 perspective-1000 touch-pan-y">
+                    <div id="activeCard" class="relative w-full h-full duration-700 preserve-3d">
+                        
+                        <!-- 牌面正面 (預設為提示框，點擊抽牌後替換內容) -->
+                        <div id="cardFront" class="absolute inset-0 w-full h-full rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between p-6 shadow-2xl overflow-hidden backface-hidden">
+                            <!-- 背景發光 -->
+                            <div id="cardFrontGlow" class="absolute -inset-48 bg-radial-gradient from-emerald-500/10 to-transparent pointer-events-none"></div>
+                            
+                            <!-- 卡頂狀態 -->
+                            <div class="flex justify-between items-center border-b border-slate-800/80 pb-3 z-10">
+                                <span id="cardCategoryTag" class="text-xs font-bold tracking-widest px-2.5 py-1 rounded-full">命運</span>
+                                <span class="text-xs text-slate-500" id="cardNumber">NO.00</span>
+                            </div>
+
+                            <!-- 卡片內容 (核心) -->
+                            <div class="flex flex-col items-center justify-center flex-grow py-6 text-center z-10 px-2">
+                                <div id="cardIconContainer" class="w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-slate-800/80">
+                                    <!-- 動態圖示插入 -->
+                                </div>
+                                <h3 id="cardTitle" class="text-xl font-bold text-slate-100 mb-3 tracking-wide">準備抽取</h3>
+                                <p id="cardDescription" class="text-slate-400 text-sm leading-relaxed max-w-[220px]">點擊兩側牌堆開始！挑戰你的命運與內心秘密。</p>
+                            </div>
+
+                            <!-- 卡底提示 -->
+                            <div class="text-center border-t border-slate-800/80 pt-3 z-10">
+                                <span class="text-xs text-slate-500 italic">✦ 命運之輪 ✦</span>
+                            </div>
+                        </div>
+
+                        <!-- 牌面背面 (動畫過渡用，通常不直接顯示，以3D翻轉實作) -->
+                        <div id="cardBack" class="absolute inset-0 w-full h-full rounded-2xl border border-slate-700 bg-slate-950 flex flex-col items-center justify-center p-6 shadow-2xl backface-hidden rotate-y-180">
+                            <!-- 太空感科技幾何圖案 -->
+                            <div class="w-full h-full border border-slate-800 rounded-xl flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-b from-slate-900 to-slate-950">
+                                <div class="absolute w-48 h-48 rounded-full border border-dashed border-slate-800 animate-spin" style="animation-duration: 40s;"></div>
+                                <div class="w-12 h-12 text-slate-500">
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-slate-500 mt-4 tracking-widest font-mono">REVEALING DESTINY</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 額外按鈕 -->
+                <div id="actionArea" class="mt-6 flex gap-3 opacity-0 transition-opacity duration-300">
+                    <button onclick="speakCardText()" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-sm font-semibold transition-all">
+                        🔊 語音朗讀
+                    </button>
+                    <button onclick="copyCardContent()" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-sm font-semibold transition-all">
+                        📋 複製內容
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右側：問題卡牌堆 (藍色, 問號) -->
+            <div class="lg:col-span-3 flex flex-col items-center justify-center gap-4 order-3">
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 rounded-full bg-sky-950/60 border border-sky-800/40 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                        QUESTION
+                    </span>
+                    <h2 class="text-lg font-bold text-slate-200">問題卡牌庫</h2>
+                </div>
+
+                <!-- 問題卡牌堆容器 -->
+                <div id="questionDeck" onclick="drawCard('question')" class="group relative w-56 h-80 cursor-pointer transition-all duration-300 hover:-translate-y-2 select-none">
+                    <!-- 堆疊底層效果 -->
+                    <div id="questionPileVisual" class="absolute inset-0 bg-sky-900/30 rounded-2xl border border-sky-700/30 deck-shadow-blue transition-all duration-300">
+                        <!-- 卡背圖案 -->
+                        <div class="absolute inset-2 bg-gradient-to-br from-sky-950 to-slate-900 rounded-xl border border-sky-500/30 flex flex-col items-center justify-center p-4">
+                            <!-- 問號圖形 (SVG) -->
+                            <div class="w-20 h-20 mb-4 text-sky-400/80 group-hover:scale-110 transition-transform duration-300">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="text-sky-400 font-extrabold tracking-widest text-lg">問題卡</div>
+                            <div class="text-[10px] text-sky-500/60 mt-2 font-mono font-bold">TOUCH TO DRAW</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-xs text-slate-500 text-center max-w-[200px]">點擊上方牌堆，抽一張隨機的問題卡</p>
+            </div>
+
+        </div>
+
+        <!-- 抽卡歷史紀錄 -->
+        <div class="mt-12 bg-slate-900/40 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">📜</span>
+                    <h3 class="font-bold text-slate-200">本次遊玩抽卡歷程</h3>
+                </div>
+                <button onclick="clearHistory()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                    清除紀錄
+                </button>
+            </div>
+            
+            <div id="historyPlaceholder" class="text-center py-8 text-slate-500 text-sm">
+                目前還沒有抽卡紀錄，快去翻開命運的第一張牌吧！
+            </div>
+            
+            <div id="historyList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto hidden pr-1">
+                <!-- 歷程動態插入 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="border-t border-slate-950 bg-slate-950/80 py-4 text-center text-xs text-slate-600">
+        <p>© 2026 命運之輪・卡牌遊戲開發工作組. All Rights Reserved.</p>
+    </footer>
+
+    <!-- 通知小氣泡提示 -->
+    <div id="toast" class="fixed bottom-6 right-6 px-4 py-2.5 bg-slate-800 border border-slate-700 text-slate-100 rounded-xl shadow-2xl opacity-0 transform translate-y-2 pointer-events-none transition-all duration-300 z-50 flex items-center gap-2 text-sm">
+        <span id="toastIcon">✨</span>
+        <span id="toastMessage">訊息提示</span>
+    </div>
+
+    <script>
+        // 1. 遊戲資料
+        const ADVENTURE_CARDS = [
+            { id: "A1", title: "循環繞場", desc: "環繞玩家走一圈。" },
+            { id: "A2", title: "勝利姿勢", desc: "擺出勝利的姿勢。" },
+            { id: "A3", title: "哈哈哈大笑", desc: "誇張的大笑三聲。" },
+            { id: "A4", title: "我説你猜", desc: "描述一個物品，讓其他人猜。" },
+            { id: "A5", title: "真心話時間", desc: "提出一個真心問題，有其他玩家輪流回答。" },
+            { id: "A6", title: "歌唱大師", desc: "唱一段自己最喜歡的歌。" },
+            { id: "A7", title: "叫我陛下", desc: "扮演一名皇帝。" },
+            { id: "A8", title: "猜拳挑戰", desc: "指定一個玩家，進行猜拳游戲。" },
+            { id: "A9", title: "搞笑敬禮", desc: "用很誇張的動作敬禮一次。" },
+            { id: "A10", title: "你回答我", desc: "指定一名玩家進行提問，必須回答。" },
+            { id: "A11", title: "承認錯誤", desc: "舉起雙手，大聲説：“我錯了”。" },
+            { id: "A12", title: "迷你啦啦隊", desc: "爲自己或一位玩家喊一句加油口號。" },
+            { id: "A13", title: "即興演員", desc: "扮演喜歡的電視劇角色。" },
+            { id: "A14", title: "魔法咒語", desc: "用神秘語氣說一句自創魔法咒語。" },
+            { id: "A15", title: "動物模仿秀", desc: "模仿一種動物的叫聲。" },
+            { id: "A16", title: "表情三連拍", desc: "連續做出開心、生氣、驚訝三種表情。" },
+            { id: "A17", title: "我是主角", desc: "大聲説：“全體目光向我看齊，看我，看我，我是主角”。" },
+            { id: "A18", title: "我超好看", desc: "擺出自己認爲最好看的姿勢。" },
+            { id: "A19", title: "超慢話語", desc: "使用超級緩慢的説話速度介紹自己。" },
+            { id: "A20", title: "機器人模式", desc: "學習機器人僵硬的動作。" }
+        ];
+
+        const QUESTION_CARDS = [
+            { id: "Q1", title: "小時候的遊戲", desc: "你小時候最常玩什麼遊戲？" },
+            { id: "Q2", title: "最喜歡的零食", desc: "你小時候最喜歡吃什麼零食？" },
+            { id: "Q3", title: "上學的回憶", desc: "你小時候上學時，最印象深刻的事是什麼？" },
+            { id: "Q4", title: "放學後時光", desc: "放學後你最喜歡做什麼？" },
+            { id: "Q5", title: "家鄉的味道", desc: "有沒有一道食物，會讓你想到小時候的家？" },
+            { id: "Q6", title: "過去的夢想", desc: "在你小時候最想實現的夢想是什麽？實現了嗎？" },
+            { id: "Q7", title: "童年朋友", desc: "小時候最常跟誰一起玩？" },
+            { id: "Q8", title: "喜歡的卡通", desc: "你小時候喜歡什麼卡通或是節目？" },
+            { id: "Q9", title: "最難忘的玩具", desc: "你小時最喜歡玩的玩具是什麼？" },
+            { id: "Q10", title: "特別的能力", desc: "你最强的能力是什麽，你想如何運用它？" },
+            { id: "Q11", title: "面對困難", desc: "生活中是否遇到了記憶深刻的困難與挑戰？怎麽解決的？" },
+            { id: "Q12", title: "如果可以改變世界", desc: "如果能改變世界，你最想改變什麼？為什麼？" },
+            { id: "Q13", title: "理想的生活", desc: "你想過怎樣的生活？未來想實現其中的什麼目標？" },
+            { id: "Q14", title: "幫助他人", desc: "你曾經幫助過別人嗎？你覺得幫助他人最好的收穫是什麽？" },
+            { id: "Q15", title: "克服恐懼", desc: "你曾經害怕什麼事物？你是如何克服的？" },
+            { id: "Q16", title: "最喜歡的老師", desc: "你小時候有沒有最喜歡的老師？他（她）是個什麼樣的人？" },
+            { id: "Q17", title: "最喜歡的運動", desc: "你平常最喜歡什麼運動或是活動？" },
+            { id: "Q18", title: "堅持與毅力", desc: "你有經堅持完成一件困難的事嗎？是什麽讓你有動力堅持下去？" },
+            { id: "Q19", title: "時間管理", desc: "你平常如何安排時間？時間管理對你有什麼幫助？" },
+            { id: "Q20", title: "處理衝突", desc: "你曾經和別人發生衝突嗎？你是如何解決的？" }
+        ];
+
+        // 運作時變數
+        let adventurePool = [];
+        let questionPool = [];
+        let history = [];
+        let soundEnabled = true;
+        let isDrawing = false; // 防止狂點狂抽導致動畫卡死
+
+        // Web Audio API 實例
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // 撥放切牌咻咻聲
+        function playWhooshSound() {
+            if (!soundEnabled) return;
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.25);
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+        }
+
+        // 撥放璀璨翻牌聲 (水晶音效)
+        function playChimeSound() {
+            if (!soundEnabled) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+            
+            // 第一音
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(523.25, now); // C5
+            gain1.gain.setValueAtTime(0.1, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc1.start(now);
+            osc1.stop(now + 0.4);
+
+            // 延遲第二音
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(783.99, audioCtx.currentTime); // G5
+                gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc2.start();
+                osc2.stop(audioCtx.currentTime + 0.5);
+            }, 100);
+        }
+
+        // 撥放重設洗牌聲
+        function playShuffleSound() {
+            if (!soundEnabled) return;
+            initAudio();
+            let count = 0;
+            const interval = setInterval(() => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150 + Math.random() * 200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.08);
+                count++;
+                if (count > 6) clearInterval(interval);
+            }, 60);
+        }
+
+        // 語音朗讀卡片
+        function speakCardText() {
+            const title = document.getElementById("cardTitle").innerText;
+            const desc = document.getElementById("cardDescription").innerText;
+            if (title === "準備抽取") return;
+
+            if ('speechSynthesis' in window) {
+                // 先取消之前的朗讀
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(`${title}。${desc}`);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+                showToast("🔊", "正在語音朗讀中...");
+            } else {
+                showToast("⚠️", "此瀏覽器不支援語音朗讀功能");
+            }
+        }
+
+        // 複製到剪貼簿 (相容 iFrame)
+        function copyCardContent() {
+            const title = document.getElementById("cardTitle").innerText;
+            const desc = document.getElementById("cardDescription").innerText;
+            if (title === "準備抽取") return;
+
+            const fullText = `【${title}】\n${desc}`;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = fullText;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast("📋", "卡牌內容已成功複製！");
+        }
+
+        // 切換靜音狀態
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById("soundIcon");
+            const text = document.getElementById("soundText");
+            if (soundEnabled) {
+                icon.innerText = "🔊";
+                text.innerText = "音效：開啟";
+                showToast("🔊", "音效功能已開啟");
+            } else {
+                icon.innerText = "🔇";
+                text.innerText = "音效：已靜音";
+                showToast("🔇", "音效功能已關閉");
+            }
+        }
+
+        // 顯示通知提示
+        function showToast(icon, message) {
+            const toast = document.getElementById("toast");
+            document.getElementById("toastIcon").innerText = icon;
+            document.getElementById("toastMessage").innerText = message;
+            
+            toast.classList.remove("opacity-0", "translate-y-2");
+            toast.classList.add("opacity-100", "translate-y-0");
+
+            setTimeout(() => {
+                toast.classList.remove("opacity-100", "translate-y-0");
+                toast.classList.add("opacity-0", "translate-y-2");
+            }, 2500);
+        }
+
+        // 控制牌堆的可互動狀態與物理防呆回饋
+        function setDecksInteractive(interactive) {
+            const advDeck = document.getElementById("adventureDeck");
+            const qDeck = document.getElementById("questionDeck");
+            
+            if (interactive) {
+                // 僅在牌庫仍有餘牌時才恢復可點擊亮色狀態
+                if (adventurePool.length > 0) {
+                    advDeck.classList.remove("pointer-events-none", "opacity-50", "scale-95");
+                }
+                if (questionPool.length > 0) {
+                    qDeck.classList.remove("pointer-events-none", "opacity-50", "scale-95");
+                }
+            } else {
+                // 鎖定中：降低亮度、縮小比例並禁用滑鼠/觸控事件
+                advDeck.classList.add("pointer-events-none", "opacity-50", "scale-95");
+                qDeck.classList.add("pointer-events-none", "opacity-50", "scale-95");
+            }
+        }
+
+        // 偵測裝置類型並顯示適應的操作導引
+        function initAdaptiveGuide() {
+            const guide = document.getElementById("adaptiveGuide");
+            const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            
+            if (isTouch) {
+                guide.innerHTML = `📱 <b>觸控模式</b>：點擊或在畫面中<strong>「左右滑動」</strong>以抽取不同卡牌`;
+            } else {
+                guide.innerHTML = `💻 <b>電腦模式</b>：可用滑鼠點擊，或按鍵盤 <strong>←</strong> / <strong>→</strong> 抽卡，<strong>Space</strong> 朗讀，<strong>Esc</strong> 重設`;
+            }
+        }
+
+        // 行動端手勢：左右滑動適應性支援
+        function initTouchGestures() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            const touchStage = document.getElementById("touchStage");
+
+            // 監聽全螢幕或卡片區域的滑動
+            window.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            window.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].screenX;
+                const touchEndY = e.changedTouches[0].screenY;
+                
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+
+                // 確保滑動以水平為主且有足夠距離 (防過敏判定)
+                if (Math.abs(deltaX) > 65 && Math.abs(deltaY) < 50) {
+                    if (deltaX > 0) {
+                        // 向右滑動 -> 抽問題卡 (與右邊牌堆對應)
+                        drawCard('question');
+                    } else {
+                        // 向左滑動 -> 抽冒險卡 (與左邊牌堆對應)
+                        drawCard('adventure');
+                    }
+                }
+            }, { passive: true });
+        }
+
+        // 電腦版鍵盤快速操作適應
+        function initKeyboardShortcuts() {
+            window.addEventListener('keydown', (e) => {
+                // 排除輸入框的干擾
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                switch (e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        drawCard('adventure');
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        drawCard('question');
+                        break;
+                    case ' ':
+                        e.preventDefault(); // 防止空白鍵滾動頁面
+                        speakCardText();
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        resetAllDecks();
+                        break;
+                }
+            });
+        }
+
+        // 抽卡核心方法
+        function drawCard(type) {
+            // 防呆鎖定檢查：如正在動畫中，拒絕重複執行
+            if (isDrawing) return;
+            
+            const pool = type === 'adventure' ? adventurePool : questionPool;
+            
+            if (pool.length === 0) {
+                showToast("⚠️", `這牌庫已經抽完囉！請點擊右上角重設牌庫。`);
+                return;
+            }
+
+            // 啟動防呆鎖定，立即禁用兩側牌堆
+            isDrawing = true;
+            setDecksInteractive(false);
+
+            // 播放切牌飛出聲音
+            playWhooshSound();
+
+            // 1. 取得主卡片元素
+            const activeCard = document.getElementById("activeCard");
+            const cardFront = document.getElementById("cardFront");
+            const cardFrontGlow = document.getElementById("cardFrontGlow");
+
+            // 2. 移除卡片本體之前的視覺狀態，加上淡出與震動特效
+            activeCard.style.transition = 'none';
+            activeCard.style.transform = 'scale(0.9) rotateY(0deg)';
+            activeCard.style.opacity = '0';
+
+            // 動畫小巧思：從兩側飛入中間
+            const flyOffset = type === 'adventure' ? '-120px' : '120px';
+            activeCard.style.left = flyOffset;
+
+            // 隨機抽取一張卡牌 (不重複抽取)
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            const drawnCard = pool.splice(randomIndex, 1)[0];
+
+            // 更新數據顯示
+            updateProgressAndCounters();
+
+            // 延遲以達成「卡片飛入中央並翻牌」的絕佳視覺效果
+            setTimeout(() => {
+                // 套用卡片顏色風格與卡牌詳情
+                applyCardDesign(type, drawnCard);
+
+                activeCard.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-out, left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                activeCard.style.left = '0px';
+                activeCard.style.opacity = '1';
+                activeCard.style.transform = 'scale(1) rotateY(180deg)'; // 開始轉向背面過渡
+
+                // 250ms 後中途轉回正面 (達成 3D 旋轉 180 度翻轉揭露效果)
+                setTimeout(() => {
+                    playChimeSound();
+                    activeCard.style.transform = 'scale(1) rotateY(0deg)';
+                    document.getElementById("actionArea").style.opacity = "1";
+                    
+                    // 記錄到歷史存根
+                    addCardToHistory(type, drawnCard);
+                    
+                    // 核心物理冷卻延遲：等 3D 彈性動畫與投影沉澱後再解鎖（共 800ms），提供極致絲滑的防 spam 體驗
+                    setTimeout(() => {
+                        isDrawing = false;
+                        setDecksInteractive(true);
+                    }, 550);
+                }, 250);
+
+            }, 50);
+        }
+
+        // 套用卡片設計 (綠色指南針 vs 藍色問號)
+        function applyCardDesign(type, card) {
+            const front = document.getElementById("cardFront");
+            const tag = document.getElementById("cardCategoryTag");
+            const num = document.getElementById("cardNumber");
+            const iconContainer = document.getElementById("cardIconContainer");
+            const title = document.getElementById("cardTitle");
+            const desc = document.getElementById("cardDescription");
+            const glow = document.getElementById("cardFrontGlow");
+
+            num.innerText = `ID: ${card.id}`;
+            title.innerText = card.title;
+            
+            if (card.desc.length > 35) {
+                desc.className = "text-slate-400 text-xs leading-relaxed max-w-[240px] px-1";
+            } else {
+                desc.className = "text-slate-400 text-sm leading-relaxed max-w-[220px]";
+            }
+            desc.innerText = card.desc;
+
+            if (type === 'adventure') {
+                // 冒險卡：綠色、指南針
+                front.className = "absolute inset-0 w-full h-full rounded-2xl border bg-slate-950 border-emerald-500/40 flex flex-col justify-between p-6 shadow-[0_0_30px_rgba(16,185,129,0.15)] overflow-hidden backface-hidden";
+                tag.className = "text-xs font-bold tracking-widest px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/40";
+                tag.innerText = "冒險卡";
+                glow.className = "absolute -inset-48 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.15)_0%,transparent_60%)] pointer-events-none";
+                
+                // 插入指南針 SVG
+                iconContainer.innerHTML = `
+                    <svg class="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7L14.5 14.5L12 12L9.5 14.5L12 7Z" />
+                    </svg>
+                `;
+            } else {
+                // 問題卡：藍色、問號
+                front.className = "absolute inset-0 w-full h-full rounded-2xl border bg-slate-950 border-sky-500/40 flex flex-col justify-between p-6 shadow-[0_0_30px_rgba(14,165,233,0.15)] overflow-hidden backface-hidden";
+                tag.className = "text-xs font-bold tracking-widest px-2.5 py-1 rounded-full bg-sky-950 text-sky-400 border border-sky-800/40";
+                tag.innerText = "問題卡";
+                glow.className = "absolute -inset-48 bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.15)_0%,transparent_60%)] pointer-events-none";
+                
+                // 插入問號 SVG
+                iconContainer.innerHTML = `
+                    <svg class="w-10 h-10 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                `;
+            }
+        }
+
+        // 更新進度條與賸餘張數
+        function updateProgressAndCounters() {
+            const advLeft = adventurePool.length;
+            const qLeft = questionPool.length;
+
+            document.getElementById("adventureCount").innerText = `${advLeft} / 20`;
+            document.getElementById("questionCount").innerText = `${qLeft} / 20`;
+
+            const totalLeft = advLeft + qLeft;
+            const totalDrawn = 40 - totalLeft;
+            const progressPercentage = (totalLeft / 40) * 100;
+
+            // 更新長條圖進度
+            document.getElementById("progressBar").style.width = `${progressPercentage}%`;
+            document.getElementById("progressText").innerText = `已抽取 ${totalDrawn} 張，賸餘 ${totalLeft} 張卡牌`;
+
+            // 如果該牌庫空了，視覺淡化牌堆
+            const advDeck = document.getElementById("adventurePileVisual");
+            if (advLeft === 0) {
+                advDeck.className = "absolute inset-0 bg-slate-900/10 rounded-2xl border border-slate-800/60 opacity-20 pointer-events-none";
+            } else {
+                advDeck.className = "absolute inset-0 bg-emerald-900/30 rounded-2xl border border-emerald-700/30 deck-shadow-green transition-all duration-300";
+            }
+
+            const qDeck = document.getElementById("questionPileVisual");
+            if (qLeft === 0) {
+                qDeck.className = "absolute inset-0 bg-slate-900/10 rounded-2xl border border-slate-800/60 opacity-20 pointer-events-none";
+            } else {
+                qDeck.className = "absolute inset-0 bg-sky-900/30 rounded-2xl border border-sky-700/30 deck-shadow-blue transition-all duration-300";
+            }
+        }
+
+        // 添加抽卡歷史紀錄到列表中
+        function addCardToHistory(type, card) {
+            history.unshift({ type, card, time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
+            
+            // 隱藏預設提示字
+            document.getElementById("historyPlaceholder").classList.add("hidden");
+            const list = document.getElementById("historyList");
+            list.classList.remove("hidden");
+
+            // 渲染列表項
+            const item = document.createElement("div");
+            const isAdv = type === 'adventure';
+            
+            item.className = `p-4 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${
+                isAdv 
+                ? 'bg-emerald-950/20 border-emerald-900/60 hover:border-emerald-700/80 text-emerald-100' 
+                : 'bg-sky-950/20 border-sky-900/60 hover:border-sky-700/80 text-sky-100'
+            }`;
+
+            item.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                        isAdv ? 'bg-emerald-950 text-emerald-400' : 'bg-sky-950 text-sky-400'
+                    }">
+                        ${isAdv ? 'Compass 冒險' : 'Question 問題'}
+                    </span>
+                    <span class="text-[10px] text-slate-500">${history[0].time}</span>
+                </div>
+                <h4 class="font-bold text-sm mb-1">${card.title}</h4>
+                <p class="text-xs text-slate-400 line-clamp-2">${card.desc}</p>
+            `;
+
+            // 每次抽卡把最新的加在最前面
+            list.insertBefore(item, list.firstChild);
+        }
+
+        // 清除歷史紀錄
+        function clearHistory() {
+            history = [];
+            const list = document.getElementById("historyList");
+            list.innerHTML = "";
+            list.classList.add("hidden");
+            document.getElementById("historyPlaceholder").classList.remove("hidden");
+            showToast("🧹", "已清空本局抽卡紀錄");
+        }
+
+        // 全局重設牌庫
+        function resetAllDecks() {
+            // 深拷貝全新資料
+            adventurePool = JSON.parse(JSON.stringify(ADVENTURE_CARDS));
+            questionPool = JSON.parse(JSON.stringify(QUESTION_CARDS));
+            
+            // 播放洗牌音效
+            playShuffleSound();
+
+            // 重設防呆與可點擊狀態
+            isDrawing = false;
+            setDecksInteractive(true);
+
+            // 重設卡片舞台預設介面
+            const activeCard = document.getElementById("activeCard");
+            const front = document.getElementById("cardFront");
+            const tag = document.getElementById("cardCategoryTag");
+            const num = document.getElementById("cardNumber");
+            const iconContainer = document.getElementById("cardIconContainer");
+            const title = document.getElementById("cardTitle");
+            const desc = document.getElementById("cardDescription");
+            const glow = document.getElementById("cardFrontGlow");
+
+            // 重設回原始提示外觀
+            front.className = "absolute inset-0 w-full h-full rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between p-6 shadow-2xl overflow-hidden backface-hidden";
+            tag.className = "text-xs font-bold tracking-widest px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700/50";
+            tag.innerText = "命運";
+            num.innerText = "NO.00";
+            title.innerText = "準備抽取";
+            desc.innerText = "點擊兩側牌堆開始！挑戰你的命運與內心秘密。";
+            glow.className = "absolute -inset-48 bg-radial-gradient from-emerald-500/10 to-transparent pointer-events-none";
+            iconContainer.innerHTML = "";
+            document.getElementById("actionArea").style.opacity = "0";
+
+            updateProgressAndCounters();
+            showToast("🔄", "牌庫已完成重設與洗牌！");
+        }
+
+        // 頁面初始化
+        window.onload = function() {
+            // 初始化
+            adventurePool = JSON.parse(JSON.stringify(ADVENTURE_CARDS));
+            questionPool = JSON.parse(JSON.stringify(QUESTION_CARDS));
+            updateProgressAndCounters();
+            
+            initAdaptiveGuide();
+            initTouchGestures();
+            initKeyboardShortcuts();
+        };
+    </script>
 </body>
 </html>
